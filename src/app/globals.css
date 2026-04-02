@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --pv-bg: #090914;
+    --pv-panel: rgba(16, 16, 34, 0.84);
+    --pv-panel-strong: rgba(22, 22, 44, 0.96);
+    --pv-border: rgba(157, 139, 210, 0.22);
+    --pv-text: #f3f1ff;
+    --pv-text-muted: #b9b2d9;
+    --pv-purple: #8d73d6;
+    --pv-blue: #6d9cff;
+    --pv-gold: #d6b56c;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+    background:
+      radial-gradient(circle at top, rgba(109, 156, 255, 0.16), transparent 30%),
+      radial-gradient(circle at 20% 20%, rgba(141, 115, 214, 0.18), transparent 28%),
+      linear-gradient(180deg, #111125 0%, #090914 48%, #05050c 100%);
+    color: var(--pv-text);
+  }
+}
+
+@layer components {
+  .btn {
+    @apply rounded-xl px-4 py-2.5 font-semibold transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply btn text-white shadow-lg;
+    background: linear-gradient(135deg, var(--pv-purple), var(--pv-blue));
+  }
+
+  .btn-secondary {
+    @apply btn border;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--pv-border);
+    color: var(--pv-text);
+  }
+
+  .card {
+    @apply flex h-full flex-col rounded-2xl border p-6 shadow-2xl backdrop-blur-sm;
+    background: var(--pv-panel);
+    border-color: var(--pv-border);
+  }
+
+  .panel {
+    @apply rounded-2xl border shadow-2xl backdrop-blur-sm;
+    background: var(--pv-panel);
+    border-color: var(--pv-border);
+  }
+
+  .panel-strong {
+    @apply rounded-3xl border shadow-2xl backdrop-blur-sm;
+    background: var(--pv-panel-strong);
+    border-color: var(--pv-border);
+  }
+
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.28em];
+    color: var(--pv-gold);
+  }
+
+  .pill {
+    @apply rounded-full border px-3 py-1 text-xs font-semibold;
+    border-color: var(--pv-border);
+    color: var(--pv-text-muted);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .field {
+    @apply w-full rounded-xl border px-3 py-2.5 outline-none transition;
+    background: rgba(7, 7, 17, 0.72);
+    border-color: rgba(157, 139, 210, 0.26);
+    color: var(--pv-text);
+  }
+
+  .field:focus {
+    border-color: rgba(109, 156, 255, 0.7);
+    box-shadow: 0 0 0 3px rgba(109, 156, 255, 0.18);
+  }
+}
