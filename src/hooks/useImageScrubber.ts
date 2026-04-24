@@ -5,13 +5,18 @@ import {
   scrubImageMetadata,
   isValidImageFormat,
   ImageMetadata,
+  detectMetadata,
+  MetadataAudit,
 } from "@/lib/metadata";
 
 export interface ScrubbedImageResult {
   id: string;
   originalFile: File;
-  cleanedCanvas: HTMLCanvasElement;
-  metadata: ImageMetadata;
+  cleanedCanvas: HTMLCanvasElement | null;
+  metadata: ImageMetadata | null;
+  audit: MetadataAudit | null;
+  isNeutralized: boolean;
+  status: 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
 }
 
 export interface UseImageScrubberReturn {
@@ -19,6 +24,7 @@ export interface UseImageScrubberReturn {
   isProcessing: boolean;
   error: string | null;
   handleImageUpload: (files: File[]) => Promise<void>;
+  neutralizeImage: (id: string) => Promise<void>;
   reset: () => void;
 }
 
