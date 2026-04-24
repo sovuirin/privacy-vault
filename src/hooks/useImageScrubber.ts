@@ -127,6 +127,56 @@ export function useImageScrubber(): UseImageScrubberReturn {
     }
   }, []);
 
+  const neutralizeImage = useCallback(
+    async (id: string) => {
+      setError(null);
+      setIsProcessing(true);
+
+      setProcessedImages((prev) =>
+        prev.map((img) =>
+          img.id === id ? { ...img, status: "neutralizing" } : img
+        )
+      );
+
+      try {
+        const image = processedImages.find((img) => img.id === id);
+        if (!image) {
+          throw new Error("Image not found");
+        }
+
+        const { canvas, metadata } = await scrubImageMetadata(
+          image.originalFile
+        );
+
+        setProcessedImages((prev) =>
+          prev.map((img) =>
+            img.id === id
+              ? {
+                  ...img,
+                  cleanedCanvas: canvas,
+                  metadata,
+                  isNeutralized: true,
+                  status: "neutralized",
+                }
+              : img
+          )
+        );
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to neutralize image";
+        setError(errorMessage);
+        setProcessedImages((prev) =>
+          prev.map((img) =>
+            img.id === id ? { ...img, status: "error" } : img
+          )
+        );
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [processedImages]
+  );
+
   const reset = useCallback(() => {
     setProcessedImages([]);
     setError(null);
