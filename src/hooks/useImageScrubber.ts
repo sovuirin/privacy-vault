@@ -64,37 +64,52 @@ export function useImageScrubber(): UseImageScrubberReturn {
     try {
       const settledResults = await Promise.allSettled(
         validFiles.map(async (file) => {
-          const { canvas, metadata } = await scrubImageMetadata(file);
-          return {
-            id: `${file.name}-${file.lastModified}-${Math.random()
-              .toString(36)
-              .slice(2, 8)}`,
-            originalFile: file,
-            cleanedCanvas: canvas,
-            metadata,
-          };
+          const id = `${file.name}-${file.lastModified}-${Math.random()
+            .toString(36)
+            .slice(2, 8)}`;
+          
+          setProcessedImages((prev) => [
+            ...prev,
+            {
+              id,
+              originalFile: file,
+              cleanedCanvas: null,
+              metadata: null,
+              audit: null,
+              isNeutralized: false,
+              status: "analyzing",
+            },
+          ]);
+
+          try {
+            const audit = await detectMetadata(file);
+            setProcessedImages((prev) =>
+              prev.map((img) =>
+                img.id === id ? { ...img, audit, status: "detected" } : img
+              )
+            );
+            return id;
+          } catch (err) {
+            setProcessedImages((prev) =>
+              prev.map((img) =>
+                img.id === id ? { ...img, status: "error" } : img
+              )
+            );
+            throw err;
+          }
         })
       );
 
-      const successfulResults: ScrubbedImageResult[] = [];
-
       settledResults.forEach((result, index) => {
-        if (result.status === "fulfilled") {
-          successfulResults.push(result.value);
-          return;
+        if (result.status === "rejected") {
+          const file = validFiles[index];
+          const reason =
+            result.reason instanceof Error
+              ? result.reason.message
+              : "failed to analyze image";
+          fileErrors.push(`${file.name}: ${reason}`);
         }
-
-        const file = validFiles[index];
-        const reason =
-          result.reason instanceof Error
-            ? result.reason.message
-            : "failed to load image";
-        fileErrors.push(`${file.name}: ${reason}`);
       });
-
-      if (successfulResults.length) {
-        setProcessedImages((prev) => [...prev, ...successfulResults]);
-      }
 
       if (fileErrors.length) {
         setError(
