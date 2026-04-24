@@ -2,6 +2,19 @@
  * Metadata Cleaner - Client-side image metadata removal
  * All processing happens in the browser. No data is sent to any server.
  */
+import ExifReader from 'exifreader';
+
+export interface Signal {
+  id: string;
+  label: string;
+  value: string;
+  category: 'location' | 'device' | 'origin' | 'sensitive';
+}
+
+export interface MetadataAudit {
+  riskLevel: 'low' | 'medium' | 'high';
+  signals: Signal[];
+}
 
 export interface ImageMetadata {
   filename: string;
@@ -272,4 +285,104 @@ export function isValidImageFormat(file: File): boolean {
  */
 export function hasImageMetadata(file: File): boolean {
   return Boolean(file);
+}
+
+/**
+ * Detects sensitive metadata signals in an image file
+ */
+export async function detectMetadata(file: File): Promise<MetadataAudit> {
+  const tags = await ExifReader.load(file);
+  const signals: Signal[] = [];
+
+  // Location signals
+  if (tags['GPSLatitude']) {
+    signals.push({
+      id: 'GPSLatitude',
+      label: 'GPS Latitude',
+      value: tags['GPSLatitude'].description,
+      category: 'location',
+    });
+  }
+  if (tags['GPSLongitude']) {
+    signals.push({
+      id: 'GPSLongitude',
+      label: 'GPS Longitude',
+      value: tags['GPSLongitude'].description,
+      category: 'location',
+    });
+  }
+
+  // Device signals
+  if (tags['Make']) {
+    signals.push({
+      id: 'Make',
+      label: 'Make',
+      value: tags['Make'].description,
+      category: 'device',
+    });
+  }
+  if (tags['Model']) {
+    signals.push({
+      id: 'Model',
+      label: 'Model',
+      value: tags['Model'].description,
+      category: 'device',
+    });
+  }
+
+  // Origin signals
+  if (tags['Software']) {
+    signals.push({
+      id: 'Software',
+      label: 'Software',
+      value: tags['Software'].description,
+      category: 'origin',
+    });
+  }
+  if (tags['DateTimeOriginal']) {
+    signals.push({
+      id: 'DateTimeOriginal',
+      label: 'Date Time Original',
+      value: tags['DateTimeOriginal'].description,
+      category: 'origin',
+    });
+  }
+
+  // Sensitive signals
+  if (tags['OwnerName']) {
+    signals.push({
+      id: 'OwnerName',
+      label: 'Owner Name',
+      value: tags['OwnerName'].description,
+      category: 'sensitive',
+    });
+  }
+  if (tags['Artist']) {
+    signals.push({
+      id: 'Artist',
+      label: 'Artist',
+      value: tags['Artist'].description,
+      category: 'sensitive',
+    });
+  }
+  if (tags['Copyright']) {
+    signals.push({
+      id: 'Copyright',
+      label: 'Copyright',
+      value: tags['Copyright'].description,
+      category: 'sensitive',
+    });
+  }
+
+  let riskLevel: 'low' | 'medium' | 'high' = 'low';
+  if (signals.length > 2) {
+    riskLevel = 'high';
+  } else if (signals.length >= 1) {
+    riskLevel = 'medium';
+  }
+
+  return {
+    riskLevel,
+    signals,
+  };
 }
