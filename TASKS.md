@@ -1,38 +1,34 @@
 # TASKS.md — Privacy Vault
 
-**Status:** Initial decomposition for priorities 1-2
+**Status:** Ready for Construction (Phase 4 Audit Verified)
 
 ---
 
-## Epic: Metadata Inspection UI
+## Epic: Forensic Metadata Audit UI
 
-**Goal:** Show users what metadata was detected and removed — build trust through transparency
+**Goal:** Provide a high-density, tactical inspection view of image metadata to build user trust.
 
 ### Tasks
 
-- [ ] **T1.** Add EXIF parsing library (exif-js or similar)
-  - *Acceptance:* Can read EXIF data from JPEG files client-side
-  - *Prompt:* "Add exif-js or similar EXIF parsing library. Check package.json for conflicts, install if needed."
+- [ ] **T1. Core State Refinement**
+  - *Acceptance:* `src/types/vault.ts` includes `AuditMatrix`, `ViolationFlag`, and `MetadataSignal` types. Zustand store supports log streaming.
+  - *Prompt:* "Refine src/types/vault.ts and useVaultStore.ts based on the docs/superpowers/audit/reconciliation_report.md. Ensure types support forensic tags and log messages."
 
-- [ ] **T2.** Create metadata detection function
-  - *Acceptance:* Function that extracts GPS, camera, timestamps from uploaded file
-  - *Prompt:* "Create a `detectMetadata(file: File)` function in src/lib that parses EXIF data and returns DetectedMetadata object with gps, camera, timestamps, device, removedFields fields. Handle cases where EXIF is missing or corrupted."
+- [ ] **T2. Forensic Detection Engine**
+  - *Acceptance:* `detectMetadata` returns granular TAG_ID and HEX_OFFSET data using `exifreader`.
+  - *Prompt:* "Implement forensic metadata detection in src/lib/metadata.ts using exifreader. Extract TAG_ID, PROPERTY, and VALUE [HEX_OFFSET] for the Audit Matrix."
 
-- [ ] **T3.** Add privacy score calculation
-  - *Acceptance:* Returns 0-100 score based on detected metadata severity
-  - *Prompt:* "Add `calculatePrivacyScore(detected: DetectedMetadata): number` function. GPS = high risk, camera serial = medium, timestamps = low. Return 0-100."
+- [ ] **T3. High-Density Audit Matrix Component**
+  - *Acceptance:* Industrial UI table showing granular forensic signals. 1px borders, Geist Mono, no rounding.
+  - *Prompt:* "Build the AuditMatrix component in src/components using the Industrial Privacy design system. It must be a three-column technical table: TAG_ID, PROPERTY, VALUE [HEX_OFFSET]."
 
-- [ ] **T4.** Build Inspection Results panel component
-  - *Acceptance:* Shows detected fields, privacy score, what will be removed
-  - *Prompt:* "Create InspectionPanel component in src/components that displays: detected metadata list (GPS, camera, timestamps with icons), privacy score (0-100 with color indicator), 'what will be removed' list. Use existing Tailwind tokens from CONVENTIONS.md."
+- [ ] **T4. Risk Index & Violation Flags**
+  - *Acceptance:* Visual RISK_INDEX (0-100) and specific forensic violation tags (e.g., [FLAG_GPS_PRECISION]).
+  - *Prompt:* "Implement the RiskIndex and ViolationFlags components. RISK_INDEX should use Risk Rose (#F43F5E) for high values. Violation tags must be square brackets."
 
-- [ ] **T5.** Integrate inspection into Image Cleaner flow
-  - *Acceptance:* Inspection panel shows after upload, before processing
-  - *Prompt:* "Update Image Cleaner flow in page.tsx: after user selects images but before canvas processing, call detectMetadata and show InspectionPanel. Allow user to proceed or cancel."
-
-- [ ] **T6.** Update process summary to show verification
-  - *Acceptance:* After processing, show "verified removed" for each field
-  - *Prompt:* "Update the processed images summary in page.tsx to show verification state — checkmarks next to each metadata type confirmed removed."
+- [ ] **T5. Terminal Processing Log**
+  - *Acceptance:* Scrolling log showing real-time neutralization steps.
+  - *Prompt:* "Create a TerminalLog component that streams neutralization steps from the vault store. Use Geist Mono and clinical status messages like '> STRIPPING_GPS_COORDINATES... SUCCESS'."
 
 ---
 
@@ -42,17 +38,8 @@
 
 ### Tasks
 
-- [ ] **T7.** Add JSZip library
-  - *Acceptance:* Can create ZIP files client-side
-  - *Prompt:* "Add jszip library for client-side ZIP creation. Install via npm."
-
-- [ ] **T8.** Create ZIP generation function
-  - *Acceptance:* Generates ZIP blob from array of cleaned images
-  - *Prompt:* "Create `generateZipBlob(files: { filename: string, blob: Blob }[]): Promise<Blob>` function in src/lib/zip.ts."
-
-- [ ] **T9.** Add 'Download All' button to ImageDownload
-  - *Acceptance:* Button appears when 2+ images, downloads single ZIP
-  - *Prompt:* "Update ImageDownload component: add 'Download All as ZIP' button that appears when there are 2+ processed images. Uses generateZipBlob function."
+- [ ] **T6.** Add JSZip library and generation function
+- [ ] **T7.** Add 'Download All as ZIP' button to ImageDownload component.
 
 ---
 
@@ -63,6 +50,7 @@
 - [x] **T10.** Create docs/research.md
 - [x] **T11.** Create BRIEF.md
 - [x] **T12.** Create SPEC.md
+- [x] **T13.** Phase 4 Audit & Reconciliation (docs/superpowers/audit/reconciliation_report.md)
 
 ---
 
