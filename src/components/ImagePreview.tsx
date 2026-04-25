@@ -29,7 +29,7 @@ function GalleryItem({ image }: GalleryItemProps) {
     canvas.height = image.cleanedCanvas.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image.cleanedCanvas, 0, 0);
-  }, [image]);
+  }, [image.id, image.cleanedCanvas]);
 
   return (
     <article className="card overflow-hidden p-0">

@@ -64,9 +64,7 @@ export function useImageScrubber(): UseImageScrubberReturn {
     try {
       const settledResults = await Promise.allSettled(
         validFiles.map(async (file) => {
-          const id = `${file.name}-${file.lastModified}-${Math.random()
-            .toString(36)
-            .slice(2, 8)}`;
+          const id = crypto.randomUUID();
           
           setProcessedImages((prev) => [
             ...prev,

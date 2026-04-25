@@ -227,6 +227,11 @@ async function toSizedBlob(
     }
 
     resizedCtx.drawImage(workingCanvas, 0, 0, nextWidth, nextHeight);
+    
+    // Explicitly clear previous canvas dimensions to help GC
+    workingCanvas.width = 0;
+    workingCanvas.height = 0;
+    
     workingCanvas = resized;
     quality = Math.max(0.55, quality - 0.08);
   }
