@@ -187,6 +187,7 @@ export function useImageScrubber(): UseImageScrubberReturn {
     isProcessing,
     error,
     handleImageUpload,
+    neutralizeImage,
     reset,
   };
 }
