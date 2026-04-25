@@ -15,7 +15,7 @@ function GalleryItem({ image }: GalleryItemProps) {
   const cleanedCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!cleanedCanvasRef.current) {
+    if (!cleanedCanvasRef.current || !image.cleanedCanvas) {
       return;
     }
 
@@ -52,7 +52,7 @@ function GalleryItem({ image }: GalleryItemProps) {
 
         <div className="mt-4 space-y-3">
           <div className="flex flex-wrap gap-2">
-            {image.metadata.metadataTypes.map((type) => (
+            {image.metadata?.metadataTypes.map((type) => (
               <span
                 key={type}
                 className="rounded-full border border-[rgba(134,211,187,0.22)] bg-[rgba(134,211,187,0.1)] px-2.5 py-1 text-[11px] font-semibold text-[#86d3bb]"
@@ -76,7 +76,7 @@ function GalleryItem({ image }: GalleryItemProps) {
                 Dimensions
               </dt>
               <dd className="mt-1 text-white">
-                {image.cleanedCanvas.width} × {image.cleanedCanvas.height}px
+                {image.cleanedCanvas?.width ?? "?"} × {image.cleanedCanvas?.height ?? "?"}px
               </dd>
             </div>
             <div className="rounded-xl border border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.03)] p-3">

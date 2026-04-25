@@ -41,6 +41,7 @@ export function ImageDownload({ images }: ImageDownloadProps) {
   }
 
   const handleSingleDownload = async (image: ScrubbedImageResult) => {
+    if (!image.cleanedCanvas) return;
     await downloadCleanedImage(
       image.cleanedCanvas,
       image.originalFile.name,
@@ -52,6 +53,7 @@ export function ImageDownload({ images }: ImageDownloadProps) {
     setIsDownloadingAll(true);
     try {
       for (const image of images) {
+        if (!image.cleanedCanvas) continue;
         await downloadCleanedImage(
           image.cleanedCanvas,
           image.originalFile.name,
@@ -163,7 +165,7 @@ export function ImageDownload({ images }: ImageDownloadProps) {
               </p>
               <p className="text-xs text-[#b9b2d9]">
                 {(image.originalFile.size / 1024).toFixed(1)} KB original •{" "}
-                {image.cleanedCanvas.width} × {image.cleanedCanvas.height}
+                {image.cleanedCanvas?.width ?? "?"} × {image.cleanedCanvas?.height ?? "?"}
               </p>
               <p className="mt-1 text-xs text-[#938cb4]">
                 Exports as {buildCleanedFilename(image.originalFile.name, format)}

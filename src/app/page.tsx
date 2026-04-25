@@ -6,6 +6,7 @@ import { ToolNav } from "@/components/ToolNav";
 import { ImageUpload } from "@/components/ImageUpload";
 import { ImagePreview } from "@/components/ImagePreview";
 import { ImageDownload } from "@/components/ImageDownload";
+import { MetadataAudit } from "@/components/MetadataAudit";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { ScreenshotRedactor } from "@/components/ScreenshotRedactor";
 import { BatchFileList } from "@/components/BatchFileList";
@@ -69,7 +70,7 @@ export default function Home() {
     isProcessing: imageProcessing,
     error: imageError,
     handleImageUpload,
-    reset: resetImages,
+    neutralizeImage,
   } = useImageScrubber();
 
   const {
@@ -81,15 +82,6 @@ export default function Home() {
     processBatch,
     downloadFile,
   } = useBatchProcessor();
-
-  const totalOriginalBytes = processedImages.reduce(
-    (sum, image) => sum + image.originalFile.size,
-    0
-  );
-  const dimensionsSummary =
-    processedImages.length === 1
-      ? `${processedImages[0].metadata.dimensions.width} × ${processedImages[0].metadata.dimensions.height}px`
-      : "Original dimensions preserved per image";
 
   const renderToolContent = () => {
     switch (currentTool) {
@@ -127,59 +119,27 @@ export default function Home() {
             )}
 
             {processedImages.length > 0 && (
-              <div className="panel-strong px-5 py-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="eyebrow">Images</p>
-                    <h3 className="text-lg font-bold text-white">
-                      {processedImages.length} image
-                      {processedImages.length === 1 ? "" : "s"} ready
-                    </h3>
-                    <p className="text-sm text-[#b9b2d9]">
-                      Metadata has been removed. Your files stayed in this
-                      browser the whole time.
-                    </p>
-                  </div>
-                  <button
-                    onClick={resetImages}
-                    className="btn-secondary whitespace-nowrap"
-                  >
-                    Clear Images
-                  </button>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-                  <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#938cb4]">
-                      Metadata Removed
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-white">
-                      EXIF, IPTC, and XMP removed from the downloaded file
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#938cb4]">
-                      Dimensions
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-white">
-                      {dimensionsSummary}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.05)] px-4 py-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#938cb4]">
-                      Privacy
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-white">
-                      {(totalOriginalBytes / (1024 * 1024)).toFixed(2)} MB
-                      processed in your browser
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-6">
+                {processedImages.map((image) => (
+                  <MetadataAudit
+                    key={image.id}
+                    image={image}
+                    onNeutralize={neutralizeImage}
+                  />
+                ))}
               </div>
             )}
 
-            <ImageDownload images={processedImages} />
-            <ImagePreview images={processedImages} />
+            {processedImages.some((img) => img.isNeutralized) && (
+              <>
+                <ImageDownload
+                  images={processedImages.filter((img) => img.isNeutralized)}
+                />
+                <ImagePreview
+                  images={processedImages.filter((img) => img.isNeutralized)}
+                />
+              </>
+            )}
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="card">
