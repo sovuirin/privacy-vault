@@ -25,21 +25,17 @@ export function ImageUpload({ onImageSelect, isProcessing }: ImageUploadProps) {
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
-
     const files = Array.from(e.dataTransfer.files ?? []);
     if (files.length) {
       onImageSelect(files);
@@ -48,22 +44,13 @@ export function ImageUpload({ onImageSelect, isProcessing }: ImageUploadProps) {
 
   return (
     <div
-      className={`panel-strong cursor-pointer border-2 border-dashed p-8 text-center transition-all ${
-        isDragging
-          ? "border-[rgba(109,156,255,0.7)] bg-[rgba(109,156,255,0.14)] shadow-[0_0_40px_rgba(109,156,255,0.12)]"
-          : "border-[rgba(141,115,214,0.35)] bg-[rgba(255,255,255,0.04)] hover:border-[rgba(109,156,255,0.5)] hover:bg-[rgba(255,255,255,0.06)]"
+      className={`border border-[#09090B] p-12 text-center transition-all bg-white relative overflow-hidden group cursor-pointer ${
+        isDragging ? "bg-[#10B981]/5 border-[#10B981]" : "hover:border-[#10B981]"
       }`}
       onClick={handleClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          handleClick();
-        }
-      }}
     >
       <input
         ref={fileInputRef}
@@ -73,47 +60,41 @@ export function ImageUpload({ onImageSelect, isProcessing }: ImageUploadProps) {
         onChange={handleFileChange}
         disabled={isProcessing}
         className="hidden"
-        aria-label="Upload image file"
       />
 
-      <div className="space-y-4">
-        <svg
-          className="mx-auto h-12 w-12 text-[#6d9cff]"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+      {/* Decorative Corners */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#09090B]" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#09090B]" />
+      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#09090B]" />
+      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#09090B]" />
 
-        <div>
-          <p className="text-lg font-semibold text-white">
-            {isProcessing
-              ? "Cleaning images locally..."
-              : isDragging
-                ? "Drop files to start"
-                : "Drop image files here"}
+      <div className="space-y-6">
+        <div className="mx-auto w-12 h-12 flex items-center justify-center border border-[#09090B]">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="square" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-black uppercase tracking-widest">
+            {isProcessing ? "[ ANALYZING_SOURCE ]" : isDragging ? "[ DROP_FILES_NOW ]" : "DROP_SOURCE_FILES"}
           </p>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-[#b9b2d9]">
-            Clean hidden metadata before sending images to chat tools, image
-            generators, social apps, or work systems. Nothing is uploaded to a
-            server.
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest max-w-sm mx-auto">
+            Client-side forensic scrubbing. No data transmission to remote nodes.
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2">
-          <span className="pill">JPEG</span>
-          <span className="pill">PNG</span>
-          <span className="pill">WebP</span>
-          <span className="pill">GIF</span>
-          <span className="pill">BMP</span>
-          <span className="pill">Up to 10 MB each</span>
+        <div className="flex flex-wrap justify-center gap-3">
+          {["JPG", "PNG", "WEBP", "GIF"].map((ext) => (
+            <span key={ext} className="text-[9px] font-black border border-gray-200 px-2 py-0.5 tracking-tighter">
+              [{ext}]
+            </span>
+          ))}
         </div>
+
+        <button className="btn-tactical bg-[#09090B] text-white">
+          BROWSE_LOCAL_STORAGE
+        </button>
       </div>
     </div>
   );

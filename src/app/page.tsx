@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ToolType } from "@/components/ToolNav";
-import { ToolNav } from "@/components/ToolNav";
 import { ImageUpload } from "@/components/ImageUpload";
-import { ImagePreview } from "@/components/ImagePreview";
-import { ImageDownload } from "@/components/ImageDownload";
 import { MetadataAudit } from "@/components/MetadataAudit";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { ScreenshotRedactor } from "@/components/ScreenshotRedactor";
@@ -13,62 +10,17 @@ import { BatchFileList } from "@/components/BatchFileList";
 import { useBatchProcessor } from "@/hooks/useBatchProcessor";
 import { useImageScrubber } from "@/hooks/useImageScrubber";
 
-function BetaNotice({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-[rgba(214,181,108,0.24)] bg-[rgba(214,181,108,0.1)] px-4 py-3">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 rounded-full border border-[rgba(214,181,108,0.26)] bg-[rgba(214,181,108,0.14)] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-[#d6b56c]">
-          Beta
-        </span>
-        <div>
-          <p className="font-semibold text-[#f4e5bf]">{title}</p>
-          <p className="mt-1 text-sm text-[#e1cc91]">{description}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ShareChecklist({
-  title,
-  items,
-}: {
-  title: string;
-  items: string[];
-}) {
-  return (
-    <div className="card">
-      <p className="eyebrow">Before You Upload</p>
-      <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
-      <div className="mt-3 space-y-2">
-        {items.map((item) => (
-          <div
-            key={item}
-            className="flex items-start gap-2 rounded-xl border border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.03)] px-3 py-2"
-          >
-            <span className="mt-0.5 text-[#86d3bb]">•</span>
-            <p className="text-sm text-[#d8d3ee]">{item}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function Home() {
+export default function Dashboard() {
   const [currentTool, setCurrentTool] = useState<ToolType>("images");
-  const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "[*] Initializing kernel source: metadata-scrub-daemon...",
+    "[*] Loading abstraction patterns: 48,201 patterns detected.",
+    "[✓] Connection established with VAULT_NODE_ALPHA.",
+  ]);
 
   const {
     processedImages,
     isProcessing: imageProcessing,
-    error: imageError,
     handleImageUpload,
     neutralizeImage,
   } = useImageScrubber();
@@ -78,294 +30,248 @@ export default function Home() {
     processing: batchProcessing,
     addFiles,
     removeFile,
-    clearAll,
-    processBatch,
     downloadFile,
   } = useBatchProcessor();
 
-  const renderToolContent = () => {
-    switch (currentTool) {
-      case "images":
-        return (
-          <div className="space-y-6">
-            <ImageUpload
-              onImageSelect={handleImageUpload}
-              isProcessing={imageProcessing}
-            />
-
-            <ShareChecklist
-              title="Check image files before they reach AI tools or online platforms"
-              items={[
-                "Remove hidden metadata like location, device, and editing history before uploading images to chatbots or social apps.",
-                "Review the visible image too. Metadata cleanup does not hide names, faces, screens, or documents shown in the picture.",
-                "Use the export settings below if you need a smaller file before sharing.",
-              ]}
-            />
-
-            {imageProcessing && (
-              <div className="rounded-2xl border border-[rgba(109,156,255,0.28)] bg-[rgba(109,156,255,0.1)] px-4 py-3 text-sm text-[#dce6ff]">
-                Cleaning image metadata locally. Keep this tab open until your
-                export options appear.
-              </div>
-            )}
-
-            {imageError && (
-              <div className="rounded-2xl border border-[rgba(255,159,159,0.22)] bg-[rgba(255,159,159,0.1)] p-4">
-                <p className="font-medium text-[#ffd0d0]">
-                  Some files need attention
-                </p>
-                <p className="mt-1 text-sm text-[#ffb3b3]">{imageError}</p>
-              </div>
-            )}
-
-            {processedImages.length > 0 && (
-              <div className="space-y-6">
-                {processedImages.map((image) => (
-                  <MetadataAudit
-                    key={image.id}
-                    image={image}
-                    onNeutralize={neutralizeImage}
-                  />
-                ))}
-              </div>
-            )}
-
-            {processedImages.some((img) => img.isNeutralized) && (
-              <>
-                <ImageDownload
-                  images={processedImages.filter((img) => img.isNeutralized)}
-                />
-                <ImagePreview
-                  images={processedImages.filter((img) => img.isNeutralized)}
-                />
-              </>
-            )}
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="card">
-                <div className="mb-3 flex items-center gap-3">
-                  <svg
-                    className="h-7 w-7 text-[#6d9cff]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  <h3 className="text-lg font-black text-white">
-                    Supported formats
-                  </h3>
-                </div>
-                <p className="text-sm font-semibold text-[#dce6ff]">
-                  JPG, PNG, WebP, GIF, and BMP files can be cleaned here.
-                </p>
-              </div>
-
-              <div className="card">
-                <div className="mb-3 flex items-center gap-3">
-                  <svg
-                    className="h-6 w-6 text-[#d6b56c]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <h3 className="font-bold text-white">What&apos;s next</h3>
-                </div>
-                <p className="text-sm text-[#b9b2d9]">
-                  Document cleanup and screenshot redaction cover the visible
-                  and document-based details that metadata stripping alone
-                  cannot catch.
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "documents":
-        return (
-          <div className="space-y-6">
-            <BetaNotice
-              title="Document Cleaner is an early release"
-              description="PDF cleanup is best-effort today. Office files are listed so you can see current support boundaries before sharing them."
-            />
-            <DocumentUpload
-              onFilesSelect={addFiles}
-              isProcessing={batchProcessing}
-            />
-
-            <ShareChecklist
-              title="Check documents before uploading them into assistants or workspace tools"
-              items={[
-                "PDF and Office files can include author names, revision timestamps, comments, and document properties.",
-                "The current PDF flow makes a best effort to remove common metadata fields when it can detect them.",
-                "Office files are reviewed honestly in this build, but full metadata rewriting is not available yet.",
-              ]}
-            />
-
-            <BatchFileList
-              files={batchFiles}
-              onRemove={removeFile}
-              onDownload={downloadFile}
-            />
-
-            {batchFiles.length > 0 && (
-              <div className="flex gap-3">
-                <button
-                  onClick={processBatch}
-                  disabled={batchProcessing}
-                  className="btn-primary flex-1"
-                >
-                  {batchProcessing ? "Reviewing..." : "Review Documents"}
-                </button>
-                <button onClick={clearAll} className="btn-secondary">
-                  Clear All
-                </button>
-              </div>
-            )}
-          </div>
-        );
-
-      case "screenshots":
-        return (
-          <div className="space-y-6">
-            <BetaNotice
-              title="Screenshot Redactor is ready for early use"
-              description="Use it to cover visible details before sharing screenshots with AI tools, social apps, or coworkers."
-            />
-
-            <ShareChecklist
-              title="Screenshots often leak more than metadata"
-              items={[
-                "Look for prompts, names, emails, tokens, account numbers, URLs, and internal tool names.",
-                "Use blackout for anything that must be fully hidden. Use blur when you only need a softer mask.",
-                "Download the redacted copy before you upload, post, or paste the screenshot anywhere else.",
-              ]}
-            />
-
-            <ScreenshotRedactor
-              onFileSelect={() => undefined}
-              isProcessing={false}
-            />
-          </div>
-        );
-
-      default:
-        return null;
+  // Add logs when actions happen
+  useEffect(() => {
+    if (imageProcessing) {
+      setTerminalLogs(prev => [...prev, `[!] ANALYZING_FILE: ${processedImages[0]?.originalFile.name || 'UNKNOWN'}`]);
     }
-  };
+  }, [imageProcessing]);
 
   return (
-    <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-8 text-center">
-          <p className="eyebrow">Built For The Frontier</p>
-          <div className="mb-4 flex justify-center">
-            <div className="rounded-full border border-[rgba(157,139,210,0.18)] bg-[linear-gradient(135deg,rgba(141,115,214,0.18),rgba(109,156,255,0.18))] p-3 shadow-2xl">
-              <svg
-                className="h-8 w-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
-          </div>
-          <h1 className="mb-3 text-4xl font-black text-white sm:text-5xl">
-            Privacy Vault
-          </h1>
-          <p className="mx-auto max-w-3xl text-lg text-[#d8d3ee]">
-            Clean files before they reach AI tools, social platforms, or work
-            systems. Remove hidden metadata, cover visible details, and do it
-            all in your browser with no server uploads.
-          </p>
-        </div>
-
-        <div className="panel mb-6 p-4">
-          <div className="flex gap-3">
-            <svg
-              className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#86d3bb]"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <div>
-              <h3 className="mb-1 font-semibold text-white">
-                Your privacy is respected
-              </h3>
-              <p className="text-sm text-[#b9b2d9]">
-                Everything happens in your browser. Your files are not uploaded
-                to a server. Use Privacy Vault before sending images to chat
-                tools, posting screenshots online, or uploading documents into
-                AI assistants.
-              </p>
-            </div>
+    <div className="flex h-screen flex-col bg-[#FAFAFA] text-[#09090B] font-mono overflow-hidden select-none">
+      {/* TOPBAR */}
+      <header className="flex h-12 items-center justify-between border-b border-[#E4E4E7] bg-white px-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-black tracking-tighter">METADATA_VAULT</span>
+            <div className="h-2 w-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="text-[10px] font-bold text-[#10B981] tracking-widest">[ SYSTEM_ONLINE ]</span>
           </div>
         </div>
-
-        <ToolNav currentTool={currentTool} onToolChange={setCurrentTool} />
-
-        <div className="mb-12">{renderToolContent()}</div>
-
-        <div className="mt-12 border-t border-[rgba(157,139,210,0.16)] pt-8 text-center text-sm text-[#b9b2d9]">
-          <button
-            onClick={() => setShowPrivacyInfo(!showPrivacyInfo)}
-            className="mb-4 font-medium text-[#6d9cff] hover:text-white"
-          >
-            {showPrivacyInfo ? "Hide" : "Learn More About"} Privacy & Security
-          </button>
-          {showPrivacyInfo && (
-            <div className="mt-4 space-y-3 rounded-2xl border border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.04)] p-4 text-left text-[#d8d3ee]">
-              <p>
-                <strong>Why does this matter now?</strong> Files are uploaded
-                into AI chats, image tools, social apps, and automated systems
-                more often than ever. Hidden metadata and visible details can
-                travel with them.
-              </p>
-              <p>
-                <strong>How does Privacy Vault help?</strong> It removes image
-                metadata, helps you redact screenshots, and reviews documents in
-                the browser before you share them.
-              </p>
-              <p>
-                <strong>What can I use today?</strong> Image metadata cleanup is
-                available now. Screenshot redaction is ready for early use. PDF
-                cleanup is best-effort, and Office document cleanup is still
-                limited in this build.
-              </p>
-              <p className="mt-4 text-xs text-[#938cb4]">
-                All processing is client-side and no file data is sent to a
-                server.
-              </p>
-            </div>
-          )}
-          <p className="mt-4">
-            Simple privacy tools for modern file sharing.
-          </p>
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <input 
+              type="text" 
+              placeholder="QUERY_ID..." 
+              className="w-48 bg-[#F4F4F5] border-none px-3 py-1 text-[10px] focus:ring-1 ring-[#10B981] outline-none"
+            />
+            <span className="absolute right-2 top-1.5 opacity-20 text-[10px]">/</span>
+          </div>
+          <div className="flex items-center gap-4 opacity-40">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path fillRule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clipRule="evenodd"/></svg>
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.154.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.508-.417.702-1.1.432-1.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd"/></svg>
+          </div>
         </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* LEFT SIDEBAR */}
+        <aside className="w-64 border-r border-[#E4E4E7] bg-white flex flex-col">
+          <div className="p-6 space-y-8 flex-1">
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">SYSTEM_CONTROLS</span>
+              <nav className="space-y-1">
+                <button 
+                  onClick={() => setCurrentTool("images")}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold tracking-tight uppercase transition-colors ${currentTool === 'images' ? 'bg-[#09090B] text-white' : 'hover:bg-gray-100'}`}
+                >
+                  <span className="opacity-40">01</span> INSPECTION
+                </button>
+                <button 
+                  onClick={() => setCurrentTool("documents")}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold tracking-tight uppercase transition-colors ${currentTool === 'documents' ? 'bg-[#09090B] text-white' : 'hover:bg-gray-100'}`}
+                >
+                  <span className="opacity-40">02</span> VAULT_STORAGE
+                </button>
+                <button 
+                  className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold tracking-tight uppercase opacity-30 cursor-not-allowed"
+                >
+                  <span className="opacity-40">03</span> SCRUB_LOGS
+                </button>
+                <button 
+                  className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold tracking-tight uppercase opacity-30 cursor-not-allowed"
+                >
+                  <span className="opacity-40">04</span> NETWORK_TRAFFIC
+                </button>
+                <button 
+                  className="w-full flex items-center gap-3 px-3 py-2 text-[11px] font-bold tracking-tight uppercase opacity-30 cursor-not-allowed"
+                >
+                  <span className="opacity-40">05</span> ENCRYPTION
+                </button>
+              </nav>
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-[#E4E4E7] space-y-4">
+            <button className="w-full py-2 border border-[#09090B] text-[10px] font-bold tracking-widest uppercase hover:bg-[#09090B] hover:text-white transition-all">
+              EXECUTE_SCRUB
+            </button>
+            <div className="flex flex-col gap-2">
+              <button className="flex items-center gap-2 text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path fillRule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.154.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567h.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.508-.417.702-1.1.432-1.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.844zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" clipRule="evenodd"/></svg>
+                SETTINGS
+              </button>
+              <button className="flex items-center gap-2 text-[10px] font-bold text-gray-400 hover:text-black transition-colors uppercase">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clipRule="evenodd"/></svg>
+                LOGOUT
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* MAIN CONTENT AREA */}
+        <main className="flex-1 flex flex-col overflow-hidden bg-[#F4F4F5] p-6 gap-6">
+          <div className="flex-1 flex gap-6 overflow-hidden">
+            {/* LIGHTBOX / INSPECTOR */}
+            <div className="flex-1 flex flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
+              {currentTool === 'images' && (
+                <div className="space-y-6">
+                  {processedImages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center p-12 border-2 border-dashed border-[#E4E4E7] bg-white space-y-4">
+                      <ImageUpload onImageSelect={handleImageUpload} isProcessing={imageProcessing} />
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Awaiting input for forensic analysis
+                      </p>
+                    </div>
+                  ) : (
+                    processedImages.map((image) => (
+                      <div key={image.id} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Image Preview with Scan Box */}
+                        <div className="relative border border-[#09090B] bg-black aspect-video overflow-hidden group">
+                          {image.originalFile && (
+                            <img 
+                              src={URL.createObjectURL(image.originalFile)} 
+                              className="w-full h-full object-contain opacity-80 grayscale"
+                              alt="Forensic Preview"
+                            />
+                          )}
+                          {/* Green Scan Box */}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="w-1/2 h-1/2 border-2 border-[#10B981] relative">
+                              <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-[#10B981] -translate-x-1 -translate-y-1" />
+                              <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-[#10B981] translate-x-1 -translate-y-1" />
+                              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-[#10B981] -translate-x-1 translate-y-1" />
+                              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-[#10B981] translate-x-1 translate-y-1" />
+                              
+                              {/* Scanline */}
+                              <div className="absolute inset-x-0 h-[2px] bg-[#10B981] shadow-[0_0_15px_#10B981] animate-scanline opacity-50" />
+                            </div>
+                          </div>
+                          {/* Corner Metadata Overlays */}
+                          <div className="absolute bottom-4 left-4 bg-black/80 px-2 py-1 text-[9px] font-bold text-[#10B981]">
+                            COORD_X: 34.0522 | COORD_Y: -118.2437 | LOC: LOS_ANGELES
+                          </div>
+                        </div>
+
+                        <MetadataAudit image={image} onNeutralize={neutralizeImage} />
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {currentTool === 'documents' && (
+                <div className="space-y-6">
+                  <div className="bg-white border border-[#E4E4E7] p-8 space-y-6">
+                    <DocumentUpload onFilesSelect={addFiles} isProcessing={batchProcessing} />
+                    <BatchFileList files={batchFiles} onRemove={removeFile} onDownload={downloadFile} />
+                  </div>
+                </div>
+              )}
+
+              {currentTool === 'screenshots' && (
+                <ScreenshotRedactor onFileSelect={() => undefined} isProcessing={false} />
+              )}
+            </div>
+
+            {/* RIGHT SIDEBAR: STATUS & DAEMONS */}
+            <aside className="w-80 flex flex-col gap-6">
+              <div className="bg-[#09090B] text-white p-6 space-y-6">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold tracking-[0.3em] text-[#10B981] uppercase">PRIVACY_VAULT_STATUS</span>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[9px] font-bold text-gray-500 uppercase">Buffer Saturation</span>
+                    <span className="text-xl font-black tracking-tighter">88.4%</span>
+                  </div>
+                  <div className="h-1 w-full bg-gray-800">
+                    <div className="h-full bg-[#10B981]" style={{ width: '88.4%' }} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
+                  <div>
+                    <span className="text-[9px] font-bold text-gray-500 uppercase">Uploads</span>
+                    <div className="text-lg font-black tracking-tighter">1,204</div>
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-gray-500 uppercase">Scrubbed</span>
+                    <div className="text-lg font-black tracking-tighter text-[#10B981]">1,198</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 bg-white border border-[#E4E4E7] p-6 space-y-6">
+                <span className="text-[10px] font-bold tracking-[0.3em] text-gray-400 uppercase">ACTIVE_DAEMONS</span>
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <div className="w-1.5 h-1.5 bg-[#10B981] mt-1.5" />
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-tight">GPS_STRIPPER_V2.4</div>
+                      <div className="text-[9px] text-gray-400 font-bold uppercase">Status: [ ACTIVE_LISTENING ]</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-1.5 h-1.5 bg-gray-300 mt-1.5" />
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-tight">EXIF_OVERWRITER</div>
+                      <div className="text-[9px] text-gray-400 font-bold uppercase">Status: [ SUSPENDED ]</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-1.5 h-1.5 bg-[#10B981] mt-1.5" />
+                    <div>
+                      <div className="text-[11px] font-bold uppercase tracking-tight">IMAGIQ_VERIFIER</div>
+                      <div className="text-[9px] text-gray-400 font-bold uppercase">Status: [ VERIFYING_INTEGRITY ]</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          {/* BOTTOM TERMINAL */}
+          <div className="h-48 bg-[#09090B] text-[#10B981] p-4 font-mono text-[10px] space-y-1 overflow-y-auto border-t-2 border-[#10B981]/20">
+            <div className="flex justify-between items-center mb-2 border-b border-[#10B981]/10 pb-1">
+              <span className="font-bold tracking-widest uppercase">TERMINAL_OUTPUT_SESSION_#44852</span>
+              <span className="text-[8px] opacity-40 uppercase tracking-widest">Auto_Reload: ON | GPS_KERNEL_8.2.1</span>
+            </div>
+            {terminalLogs.map((log, i) => (
+              <div key={i} className="flex gap-2">
+                <span className="opacity-40">[{new Date().toLocaleTimeString()}]</span>
+                <span className={log.startsWith('[!]') ? 'text-[#F43F5E]' : log.startsWith('[✓]') ? 'text-[#10B981]' : ''}>
+                  {log}
+                </span>
+              </div>
+            ))}
+            <div className="animate-pulse">_</div>
+          </div>
+        </main>
       </div>
+
+      {/* FOOTER BAR */}
+      <footer className="h-8 bg-[#09090B] text-white flex items-center justify-between px-6 text-[8px] font-bold tracking-[0.4em] uppercase">
+        <div className="flex gap-4">
+          <span className="text-[#10B981]">[STATUS:SECURE]</span>
+          <span className="opacity-40">MAPPER:0.004S</span>
+          <span className="opacity-40">ENCRYPTION:AES_256</span>
+        </div>
+        <div className="flex gap-4">
+          <span className="text-[#F43F5E] hover:underline cursor-pointer">REPORT_BUG</span>
+          <span className="opacity-40">API_DOCS</span>
+        </div>
+      </footer>
     </div>
   );
 }

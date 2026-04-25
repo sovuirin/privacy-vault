@@ -4,15 +4,13 @@
 
 @layer base {
   :root {
-    --pv-bg: #090914;
-    --pv-panel: rgba(16, 16, 34, 0.84);
-    --pv-panel-strong: rgba(22, 22, 44, 0.96);
-    --pv-border: rgba(157, 139, 210, 0.22);
-    --pv-text: #f3f1ff;
-    --pv-text-muted: #b9b2d9;
-    --pv-purple: #8d73d6;
-    --pv-blue: #6d9cff;
-    --pv-gold: #d6b56c;
+    --sterile-canvas: #FAFAFA;
+    --vault-surface: #FFFFFF;
+    --terminal-black: #09090B;
+    --metadata-gray: #52525B;
+    --structural-line: #E4E4E7;
+    --active-emerald: #10B981;
+    --risk-rose: #F43F5E;
   }
 
   html {
@@ -20,71 +18,78 @@
   }
 
   body {
-    @apply antialiased;
-    background:
-      radial-gradient(circle at top, rgba(109, 156, 255, 0.16), transparent 30%),
-      radial-gradient(circle at 20% 20%, rgba(141, 115, 214, 0.18), transparent 28%),
-      linear-gradient(180deg, #111125 0%, #090914 48%, #05050c 100%);
-    color: var(--pv-text);
+    @apply antialiased min-h-screen bg-[#FAFAFA] text-[#09090B];
+    font-family: 'Geist Mono', monospace;
   }
 }
 
 @layer components {
-  .btn {
-    @apply rounded-xl px-4 py-2.5 font-semibold transition-all duration-200;
+  /* Industrial UI Components */
+  .btn-tactical {
+    @apply border border-[#09090B] px-4 py-2 font-bold uppercase tracking-widest text-[11px] transition-all;
+    border-radius: 0;
   }
 
-  .btn-primary {
-    @apply btn text-white shadow-lg;
-    background: linear-gradient(135deg, var(--pv-purple), var(--pv-blue));
+  .btn-tactical:hover {
+    @apply bg-[#09090B] text-[#FAFAFA];
   }
 
-  .btn-secondary {
-    @apply btn border;
-    background: rgba(255, 255, 255, 0.04);
-    border-color: var(--pv-border);
-    color: var(--pv-text);
+  .btn-tactical:active {
+    @apply translate-y-[1px];
   }
 
-  .card {
-    @apply flex h-full flex-col rounded-2xl border p-6 shadow-2xl backdrop-blur-sm;
-    background: var(--pv-panel);
-    border-color: var(--pv-border);
+  .container-tactical {
+    @apply border border-[#E4E4E7] bg-white;
+    border-radius: 0;
   }
 
-  .panel {
-    @apply rounded-2xl border shadow-2xl backdrop-blur-sm;
-    background: var(--pv-panel);
-    border-color: var(--pv-border);
+  .badge-tactical {
+    @apply font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5;
   }
 
-  .panel-strong {
-    @apply rounded-3xl border shadow-2xl backdrop-blur-sm;
-    background: var(--pv-panel-strong);
-    border-color: var(--pv-border);
+  .input-tactical {
+    @apply border-b border-[#09090B] bg-transparent py-2 font-mono text-sm outline-none transition-all;
+    border-radius: 0;
   }
 
-  .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.28em];
-    color: var(--pv-gold);
+  .input-tactical:focus {
+    @apply border-b-2 border-[#10B981];
   }
 
-  .pill {
-    @apply rounded-full border px-3 py-1 text-xs font-semibold;
-    border-color: var(--pv-border);
-    color: var(--pv-text-muted);
-    background: rgba(255, 255, 255, 0.05);
+  /* Utilities for the Industrial look */
+  .data-label {
+    @apply text-[10px] font-bold uppercase tracking-[0.2em] text-[#52525B];
   }
 
-  .field {
-    @apply w-full rounded-xl border px-3 py-2.5 outline-none transition;
-    background: rgba(7, 7, 17, 0.72);
-    border-color: rgba(157, 139, 210, 0.26);
-    color: var(--pv-text);
+  .data-value {
+    @apply text-[12px] font-bold tracking-tighter text-[#09090B];
   }
+}
 
-  .field:focus {
-    border-color: rgba(109, 156, 255, 0.7);
-    box-shadow: 0 0 0 3px rgba(109, 156, 255, 0.18);
-  }
+/* Custom Scanline Animation */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-scanline {
+  animation: scanline 3s linear infinite;
+}
+
+/* Custom Scrollbar for Tactical UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAFAFA;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E4E4E7;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #09090B;
 }
