@@ -59,8 +59,8 @@ export function DocumentUpload({
 
   return (
     <div
-      className={`relative w-full rounded-[2.5rem] p-1 transition-all duration-500 overflow-hidden cursor-pointer ${
-        isDragging ? "bg-primary shadow-2xl shadow-primary/20 scale-[1.01]" : "bg-surface-low hover:bg-surface-high"
+      className={`relative w-full rounded-[3rem] p-1 transition-all duration-700 overflow-hidden cursor-pointer ${
+        isDragging ? "bg-primary shadow-2xl scale-[1.01]" : "bg-white/40 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/60"
       }`}
       onClick={handleClick}
       onDragOver={handleDragOver}
@@ -77,25 +77,25 @@ export function DocumentUpload({
         className="hidden"
       />
 
-      <div className={`w-full py-16 rounded-[2.4rem] flex flex-col items-center justify-center space-y-6 border-2 border-dashed transition-colors duration-500 ${
-        isDragging ? "border-white/40 bg-primary/10" : "border-on-background/5"
+      <div className={`w-full py-16 rounded-[2.9rem] flex flex-col items-center justify-center space-y-6 border-2 border-dashed transition-all duration-700 ${
+        isDragging ? "border-white/40 bg-primary/10" : "border-black/5"
       }`}>
         <motion.div 
           animate={isDragging ? { scale: 1.1 } : { scale: 1 }}
-          className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500 ${
-            isDragging ? "bg-white text-primary" : "bg-surface-lowest text-on-background"
+          className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-700 ${
+            isDragging ? "bg-white text-primary" : "bg-white/60 text-on-background shadow-inner"
           }`}
         >
           {isDragging ? <FileUp size={28} /> : <FileText size={28} />}
         </motion.div>
 
-        <div className="text-center space-y-2">
-          <h3 className={`text-xl font-bold tracking-tight transition-colors duration-500 ${
+        <div className="text-center space-y-2 px-8">
+          <h3 className={`text-2xl font-bold tracking-tight transition-colors duration-700 ${
             isDragging ? "text-white" : "text-on-background"
           }`}>
             {isProcessing ? "Analyzing Document Structure..." : isDragging ? "Ready for Deep-Scrub" : "Vault Document Import"}
           </h3>
-          <p className={`text-xs font-light max-w-xs mx-auto leading-relaxed transition-colors duration-500 ${
+          <p className={`text-xs font-light max-w-xs mx-auto leading-relaxed transition-colors duration-700 ${
             isDragging ? "text-white/70" : "text-on-background/40"
           }`}>
             Removing hidden properties, revision history, and user identifiers.
@@ -104,14 +104,19 @@ export function DocumentUpload({
 
         <div className="flex gap-2">
           {["PDF", "DOCX", "XLSX"].map((ext) => (
-            <span key={ext} className={`px-3 py-1 rounded-full text-[9px] font-bold tracking-widest transition-colors duration-500 ${
-              isDragging ? "bg-white/20 text-white" : "bg-surface-lowest text-on-background/60"
+            <span key={ext} className={`px-3 py-1 rounded-full text-[9px] font-bold tracking-widest transition-colors duration-700 ${
+              isDragging ? "bg-white/20 text-white" : "bg-white/60 text-on-background/60 shadow-sm"
             }`}>
               {ext}
             </span>
           ))}
         </div>
       </div>
+      
+      {/* Whisper Border Glow */}
+      {!isDragging && (
+        <div className="absolute inset-0 rounded-[3rem] border border-white/40 pointer-events-none" />
+      )}
     </div>
   );
 }

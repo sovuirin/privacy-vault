@@ -146,11 +146,11 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className={`card-bento min-h-[300px] flex flex-col no-line-boundary ${spanClass}`}
+              className={`relative overflow-hidden p-8 bg-white/40 backdrop-blur-md rounded-[2rem] border border-white/20 shadow-lg min-h-[300px] flex flex-col ${spanClass}`}
             >
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-surface-low text-primary shadow-inner">
+                  <div className="p-2.5 rounded-xl bg-white/50 text-primary shadow-sm">
                     <Icon size={20} />
                   </div>
                   <span className="label-luxe">{cat.label}</span>
@@ -175,7 +175,7 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
                             <>
                               <div>{s.value || 'None'}</div>
                               {mode === 'aggregate' && 'percentage' in s && (
-                                <div className="mt-1.5 h-1 w-full bg-on-background/5 rounded-full overflow-hidden">
+                                <div className="mt-1.5 h-1 w-full bg-black/5 rounded-full overflow-hidden">
                                   <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: `${(s as any).percentage}%` }}
@@ -200,6 +200,9 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
               <div className="absolute -bottom-4 -right-4 opacity-[0.02] text-on-background">
                 <Icon size={120} />
               </div>
+              
+              {/* Whisper Border Glow */}
+              <div className="absolute inset-0 rounded-[2rem] border border-white/40 pointer-events-none" />
             </motion.div>
           );
         })}
