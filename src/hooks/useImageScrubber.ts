@@ -93,7 +93,7 @@ export function useImageScrubber(): UseImageScrubberReturn {
         setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralizing' } : f));
         const { canvas } = await scrubImageMetadata(entry.file);
         const blob = await buildCleanedImageBlob(canvas);
-        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob } : f));
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob, neutralizedCanvas: canvas } : f));
       } catch (err) {
         console.error(`Failed to neutralize ${entry.file.name}:`, err);
         setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'error' } : f));
@@ -163,7 +163,7 @@ export function useImageScrubber(): UseImageScrubberReturn {
 
       const { canvas } = await scrubImageMetadata(entry.file);
       const blob = await buildCleanedImageBlob(canvas);
-      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob } : f));
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob, neutralizedCanvas: canvas } : f));
     } catch (err) {
       setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'error' } : f));
     }

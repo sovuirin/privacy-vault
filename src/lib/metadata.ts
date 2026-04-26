@@ -28,6 +28,7 @@ export interface BatchFile {
   status: 'pending' | 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
   isNeutralized: boolean;
   neutralizedBlob?: Blob;
+  neutralizedCanvas?: HTMLCanvasElement;
 }
 
 export interface AggregatedReport {

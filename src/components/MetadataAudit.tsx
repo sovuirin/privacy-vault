@@ -1,16 +1,16 @@
 "use client";
 
-import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
+import { BatchFile } from "@/lib/metadata";
 
 interface MetadataAuditProps {
-  image: ScrubbedImageResult;
+  image: BatchFile;
   onNeutralize: (id: string) => Promise<void>;
 }
 
 export function MetadataAudit({ image, onNeutralize }: MetadataAuditProps) {
-  if (!image.audit) return null;
+  if (!image.report) return null;
 
-  const { riskScore, signals, violationFlags } = image.audit;
+  const { riskScore, signals, violationFlags } = image.report;
   const isNeutralized = image.isNeutralized || image.status === "neutralized";
   const isNeutralizing = image.status === "neutralizing";
 
@@ -21,7 +21,7 @@ export function MetadataAudit({ image, onNeutralize }: MetadataAuditProps) {
         <div>
           <h2 className="text-sm font-bold tracking-tighter uppercase">PHOTO_INSPECTION_MODULE</h2>
           <p className="text-[9px] text-gray-500 mt-1 uppercase opacity-70">
-            FILE: {image.originalFile.name} | {(image.originalFile.size / 1024 / 1024).toFixed(1)} MB
+            FILE: {image.file.name} | {(image.file.size / 1024 / 1024).toFixed(1)} MB
           </p>
         </div>
         <div className="text-[9px] font-bold text-[#10B981] animate-pulse">

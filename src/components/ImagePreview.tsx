@@ -1,21 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
+import { BatchFile } from "@/lib/metadata";
 
 interface ImagePreviewProps {
-  images: ScrubbedImageResult[];
+  images: BatchFile[];
 }
 
 interface GalleryItemProps {
-  image: ScrubbedImageResult;
+  image: BatchFile;
 }
 
 function GalleryItem({ image }: GalleryItemProps) {
   const cleanedCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!cleanedCanvasRef.current || !image.cleanedCanvas) {
+    if (!cleanedCanvasRef.current || !image.neutralizedCanvas) {
       return;
     }
 
@@ -25,17 +25,17 @@ function GalleryItem({ image }: GalleryItemProps) {
       return;
     }
 
-    canvas.width = image.cleanedCanvas.width;
-    canvas.height = image.cleanedCanvas.height;
+    canvas.width = image.neutralizedCanvas.width;
+    canvas.height = image.neutralizedCanvas.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(image.cleanedCanvas, 0, 0);
-  }, [image.id, image.cleanedCanvas]);
+    ctx.drawImage(image.neutralizedCanvas, 0, 0);
+  }, [image.id, image.neutralizedCanvas]);
 
   return (
     <article className="card overflow-hidden p-0">
       <div className="border-b border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.04)] p-4">
         <h3 className="break-all text-base font-semibold text-white">
-          {image.originalFile.name}
+          {image.file.name}
         </h3>
         <p className="mt-1 text-sm text-[#b9b2d9]">
           Metadata removed
@@ -52,12 +52,12 @@ function GalleryItem({ image }: GalleryItemProps) {
 
         <div className="mt-4 space-y-3">
           <div className="flex flex-wrap gap-2">
-            {image.metadata?.metadataTypes.map((type) => (
+            {image.report?.signals.map((signal) => (
               <span
-                key={type}
+                key={signal.id}
                 className="rounded-full border border-[rgba(134,211,187,0.22)] bg-[rgba(134,211,187,0.1)] px-2.5 py-1 text-[11px] font-semibold text-[#86d3bb]"
               >
-                {type} removed
+                {signal.label} removed
               </span>
             ))}
           </div>
@@ -68,7 +68,7 @@ function GalleryItem({ image }: GalleryItemProps) {
                 Original Size
               </dt>
               <dd className="mt-1 text-white">
-                {(image.originalFile.size / 1024).toFixed(2)} KB
+                {(image.file.size / 1024).toFixed(2)} KB
               </dd>
             </div>
             <div className="rounded-xl border border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.03)] p-3">
@@ -76,7 +76,7 @@ function GalleryItem({ image }: GalleryItemProps) {
                 Dimensions
               </dt>
               <dd className="mt-1 text-white">
-                {image.cleanedCanvas?.width ?? "?"} × {image.cleanedCanvas?.height ?? "?"}px
+                {image.neutralizedCanvas?.width ?? "?"} × {image.neutralizedCanvas?.height ?? "?"}px
               </dd>
             </div>
             <div className="rounded-xl border border-[rgba(157,139,210,0.18)] bg-[rgba(255,255,255,0.03)] p-3">

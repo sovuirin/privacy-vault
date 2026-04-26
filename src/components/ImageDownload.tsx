@@ -7,10 +7,10 @@ import {
   ExportFormat,
   ExportOptions,
 } from "@/lib/metadata";
-import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
+import { BatchFile } from "@/lib/metadata";
 
 interface ImageDownloadProps {
-  images: ScrubbedImageResult[];
+  images: BatchFile[];
 }
 
 function formatLabel(format: ExportFormat): string {
@@ -40,11 +40,11 @@ export function ImageDownload({ images }: ImageDownloadProps) {
     return null;
   }
 
-  const handleSingleDownload = async (image: ScrubbedImageResult) => {
-    if (!image.cleanedCanvas) return;
+  const handleSingleDownload = async (image: BatchFile) => {
+    if (!image.neutralizedCanvas) return;
     await downloadCleanedImage(
-      image.cleanedCanvas,
-      image.originalFile.name,
+      image.neutralizedCanvas,
+      image.file.name,
       options
     );
   };
@@ -53,10 +53,10 @@ export function ImageDownload({ images }: ImageDownloadProps) {
     setIsDownloadingAll(true);
     try {
       for (const image of images) {
-        if (!image.cleanedCanvas) continue;
+        if (!image.neutralizedCanvas) continue;
         await downloadCleanedImage(
-          image.cleanedCanvas,
-          image.originalFile.name,
+          image.neutralizedCanvas,
+          image.file.name,
           options
         );
       }
@@ -161,14 +161,14 @@ export function ImageDownload({ images }: ImageDownloadProps) {
           >
             <div className="min-w-0">
               <p className="truncate font-semibold text-white">
-                {image.originalFile.name}
+                {image.file.name}
               </p>
               <p className="text-xs text-[#b9b2d9]">
-                {(image.originalFile.size / 1024).toFixed(1)} KB original •{" "}
-                {image.cleanedCanvas?.width ?? "?"} × {image.cleanedCanvas?.height ?? "?"}
+                {(image.file.size / 1024).toFixed(1)} KB original •{" "}
+                {image.neutralizedCanvas?.width ?? "?"} × {image.neutralizedCanvas?.height ?? "?"}
               </p>
               <p className="mt-1 text-xs text-[#938cb4]">
-                Exports as {buildCleanedFilename(image.originalFile.name, format)}
+                Exports as {buildCleanedFilename(image.file.name, format)}
               </p>
             </div>
             <button
