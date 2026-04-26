@@ -12,53 +12,37 @@ interface TopAppBarProps {
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({ currentTool, onToolChange }) => {
   return (
-    <header className="glass-header">
-      <div className="flex h-20 items-center justify-between px-12">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
-            <Shield size={20} />
-          </div>
-          <span className="font-display text-2xl font-bold tracking-tight text-primary uppercase">
-            Privacy Vault
-          </span>
-        </div>
-
-        {/* Tool Switcher */}
-        <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-12">
-          {(["terminal", "vault", "monitor"] as const).map((tool) => (
-            <button
-              key={tool}
-              onClick={() => onToolChange(tool)}
-              className={`group relative flex flex-col items-center py-2 transition-all duration-300`}
-            >
-              <span
-                className={`label-luxe transition-colors duration-300 ${
-                  currentTool === tool
-                    ? "text-primary opacity-100"
-                    : "text-on-background/40 group-hover:text-on-background/80"
-                }`}
-              >
-                {tool}
-              </span>
-              {currentTool === tool && (
-                <div className="absolute -bottom-1 h-1 w-1 rounded-full bg-secondary shadow-[0_0_8px_#705d00]" />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {/* Status / User */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 rounded-full bg-surface-low px-4 py-2">
-            <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-            <span className="label-luxe text-[8px] opacity-100">System Secure</span>
-          </div>
-          <div className="h-10 w-10 rounded-full bg-surface-high flex items-center justify-center text-on-background/40 hover:bg-surface-highest transition-colors cursor-pointer">
-            <span className="material-symbols-outlined text-sm">person</span>
-          </div>
-        </div>
+    <div className="fixed top-8 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+      <nav className="pointer-events-auto flex items-center gap-1 p-1 bg-white/40 backdrop-blur-2xl rounded-full border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.08)]">
+        {(["terminal", "vault", "monitor"] as const).map((tool) => (
+          <button
+            key={tool}
+            onClick={() => onToolChange(tool)}
+            className={`
+              relative px-6 py-2 rounded-full transition-all duration-500
+              ${currentTool === tool 
+                ? "text-primary shadow-[0_2px_8px_rgba(93,57,224,0.1)]" 
+                : "text-on-background/40 hover:text-on-background/80 hover:bg-white/40"
+              }
+            `}
+          >
+            {/* Active Background Pill */}
+            {currentTool === tool && (
+              <div className="absolute inset-0 bg-white rounded-full -z-10 shadow-sm" />
+            )}
+            
+            <span className="label-luxe block relative">
+              {tool}
+            </span>
+          </button>
+        ))}
+      </nav>
+      
+      {/* Branding - Optional but keeping it minimalist */}
+      <div className="absolute top-1/2 -translate-y-1/2 left-12 flex items-center gap-2 opacity-40 hover:opacity-100 transition-opacity">
+        <Shield size={16} className="text-primary" />
+        <span className="label-luxe text-[8px]">Privacy Vault v2</span>
       </div>
-    </header>
+    </div>
   );
 };
