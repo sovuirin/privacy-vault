@@ -21,6 +21,24 @@ export interface ForensicReport {
   violationFlags: string[];
 }
 
+export interface BatchFile {
+  id: string;
+  file: File;
+  report: ForensicReport | null;
+  status: 'pending' | 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
+  isNeutralized: boolean;
+}
+
+export interface AggregatedReport {
+  totalFiles: number;
+  totalHighRiskSignals: number;
+  highestRiskScore: number;
+  averageRiskScore: number;
+  uniqueDeviceModels: string[];
+  hasLocationData: boolean;
+}
+
+
 export interface ImageMetadata {
   filename: string;
   size: number;

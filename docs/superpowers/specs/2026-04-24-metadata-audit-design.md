@@ -1,46 +1,45 @@
-# SPEC: Metadata Audit & Neutralization
+# SPEC: Forensic Metadata Audit (Meridian Update)
 
-**Status**: Draft
-**Date**: 2026-04-24
-**Topic**: High-precision metadata detection and clinical neutralization UI.
+**Status**: Reconciled
+**Date**: 2026-04-26
+**Aesthetic**: Meridian Sanctuary (Solar Atelier)
 
 ---
 
 ## 1. Problem Statement
-Users need "Trust through Transparency." The current passive metadata removal feels like a "black box." We need to show what is being removed to prove value and build trust.
+Users require "Trust through Forensic Transparency." The system must bridge the gap between "Black Box" scrubbing and professional-grade metadata intelligence, presenting risks with editorial clarity.
 
-## 2. Goals
-- Actively parse original file metadata before scrubbing.
-- Present findings in a "High Signal" Intelligence Agency aesthetic.
-- Split the flow into "Detection" and "Neutralization" phases.
-- Maintain 100% client-side processing.
+## 2. Aesthetic Strategy: "The Solar Atelier"
+- **Typography**: **Space Grotesk** for status labels (`display-sm`) to signal authority. **Geist Sans** for the inspection report.
+- **Hierarchy**: Use **Tonal Layering** (Level 0 to Level 2) instead of borders.
+- **Micro-Interaction**: A scanline "shimmer" is only visible during the `analyzing` and `neutralizing` phases.
 
-## 3. Architecture
-- **Library**: `exifreader` (client-side parsing).
-- **Core Functionality**:
-  - `detectMetadata(file: File)`: Returns a `MetadataAudit` object.
-  - `scrubImageMetadata(file: File)`: Refactored to be an explicit action after detection.
-- **State Management**: Update `useImageScrubber` to track `auditState` (None -> Detected -> Neutralized).
+## 3. The Forensic Engine (`lib/metadata.ts`)
+- **Signal Extraction**: Extracts binary-level data (Hex offsets, Tag IDs) using `exifreader`.
+- **Risk Scoring**: 
+  - Weight: `signals.length * 5` + `highRiskCount * 20`.
+  - Level: High (>70), Medium (30-70), Low (<30).
+- **Violation Flags**: Human-readable constants (e.g., `FLAG_GPS_PRECISION_ERR`) for quick triage.
 
-## 4. Component Design: `MetadataAudit.tsx`
-- **Location**: `src/components/MetadataAudit.tsx`.
-- **Primary View (Report Card)**:
-  - Summarizes leaks into categories: **Location**, **Device**, **Origin**, **Sensitive**.
-  - Shows "SIGNAL DETECTED" badges.
-  - Action Button: **"Neutralize Metadata"**.
-- **Secondary View (Detailed Audit)**:
-  - Tactical toggle reveals raw values (GPS, Model, etc.) in monospaced font.
-- **Result View**:
-  - Global status: **"SIGNAL NEUTRALIZED: [TIMESTAMP]"**.
-  - Success color: `var(--pv-gold)`.
+## 4. UI Component: `MetadataAudit.tsx`
+- **Primary View**: The **Forensic Matrix**.
+  - No horizontal/vertical lines. Use `1.5rem` vertical spacing.
+  - Hovering a signal shifts the background to `surface-container-high`.
+- **The "Sovereign Gauge"**:
+  - A large, animated numeric score (0-100) using Space Grotesk.
+  - Color transitions from **Obsidian Ink** to **Risk Rose** based on score.
+- **Neutralization Trigger**:
+  - A pill-shaped button with a **Sovereign Purple** gradient.
+  - On hover: `shadow-[0_0_40px_-10px_#5D39E0]`.
+  - Transform: -1px on active.
 
-## 5. UI/UX Flow
-1. **Upload**: User adds image.
-2. **Analysis**: UI shows "Analyzing..." then reveals the `MetadataAudit` Report Card.
-3. **Action**: User reviews "SIGNAL DETECTED" and clicks **"Neutralize Metadata"**.
-4. **Completion**: UI updates to "SIGNAL NEUTRALIZED". Download/Export options (via `QualitySettings` and `ImageDownload`) are enabled.
+## 5. State Machine: "Analyze → Neutralize"
+1. **`analyzing`**: Skeleton loaders active.
+2. **`detected`**: Reveal `ForensicReport`. Matrix is populated.
+3. **`neutralizing`**: Progress circle overlay on the action button.
+4. **`neutralized`**: UI locks. Show `[+] THREAT_NEUTRALIZED` banner in **Sunrise Gold**.
 
-## 6. Aesthetic Guardrails
-- **Precision**: 0.5px borders, clinical spacing.
-- **Motion**: Subtle slide-up transitions for the toggle.
-- **Vibe**: Intelligence Agency / High-end Cyber-Security.
+## 6. Anti-Patterns
+- **No Borders**: All borders must be removed and replaced with background shifts.
+- **No Tables**: Replace the `<table>` element with a `flex-col` list for a more editorial feel.
+- **No generic monospacing**: Mono is strictly for hex/tag data.

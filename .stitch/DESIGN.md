@@ -1,50 +1,67 @@
-# Design System: Privacy Vault
+# Design System: Privacy Vault (The Meridian Sanctuary)
 
 ## 1. Visual Theme & Atmosphere
-**The Glass Monolith (Elite Minimalism)** — A restrained, gallery-airy interface that feels like a high-end luxury service. It prioritizes clarity, trust, and premium user experience over raw technical density. The atmosphere is calm, secure, and ethereal—like a private digital sanctuary.
+**The Meridian Sanctuary (Solar Atelier)** — A premium, editorial interface that feels like a high-end architectural workspace bathed in warm, diffused natural light. It prioritizes breathable clarity and agency over technical noise. The atmosphere is intellectual, secure, and unapologetically high-end.
 
-- **Density:** 3 (Art Gallery Airy - generous whitespace)
-- **Variance:** 4 (Balanced but with intentional offsets)
-- **Motion:** 7 (Fluid, "springy" transitions; staggered orchestration)
+- **Density:** 3 (Art Gallery Airy - extreme focus on white space)
+- **Variance:** 6 (Intentional Asymmetry - editorial layouts)
+- **Motion:** 7 (Fluid, "springy" transitions; staggered cascade reveals)
 
 ## 2. Color Palette & Roles
-- **Ivory Canvas** (#FDFDFD) — Primary background surface
-- **Frosted Surface** (rgba(255, 255, 255, 0.4)) — Glassmorphic containers with 20px blur
-- **Obsidian Ink** (#18181B) — Primary text (Zinc-900 depth)
-- **Ghost Gray** (#A1A1AA) — Secondary labels and muted metadata
-- **Active Emerald** (#10B981) — Refined accent for "Secure" and "Cleaned"
+- **Natural Parchment** (#FBF9F1) — Primary background surface (Canvas)
+- **Sovereign Surface** (#FFFFFF) — Card and container fill for "bright" lift
+- **Parchment Accent** (#F5F4EC) — Tonal background shift for depth (replaces borders)
+- **Obsidian Ink** (#1B1C17) — Primary text (Deep charcoal with purple undertone)
+- **Muted Steel** (#71717A) — Secondary labels and muted metadata
+- **Sovereign Purple** (#5D39E0) — Primary accent for high-intent actions (CTAs)
+- **Sunrise Gold** (#705D00) — Single-pixel luxury accent for success/status dots
 - **Risk Rose** (#EF4444) — Sophisticated danger accent for "Detected Risks"
 
 ## 3. Typography Rules
-- **Display/Headlines**: **Cormorant Garamond** — Elegant, high-contrast Serif. Used for status reports and section headers to signal "Heritage & Trust."
+- **Display/Headlines**: **Space Grotesk** — Geometric, authoritative. Apply -2% letter spacing for high-end "Swiss" feel.
 - **Interface/Body**: **Geist Sans** — Clean, modern Sans-Serif. Primary font for all functional UI and navigation.
-- **Forensic/Data**: **Geist Mono** — Strictly reserved for raw data strings, hex offsets, and tag IDs.
-- **Hierarchy**: Established through large margins and weight. Headlines use `tracking-tight`.
+- **Forensic/Data**: **JetBrains Mono** — The "Human Craft" signature. Used strictly for raw data, hex offsets, and labels.
+- **Hierarchy**: Established through large margins and weight. Titles use `tracking-tight`.
 
-## 4. The Hero: "The Inspection Point"
-The Hero section is balanced and airy.
-- **Centered Focus**: Large headline in Cormorant Garamond (Italic/Regular mix).
-- **Floating Dropzone**: A single, minimalist upload zone with a soft "whisper shadow" and 12px rounding.
-- **Visual Punctuation**: Subtle, rounded status badges (e.g., `(Secure)`) that appear with a slight "float" animation.
+## 4. Component Stylings: The Geometric Blueprint
 
-## 5. Component Stylings
-- **Buttons**: 8px - 12px rounding (soft). No hard borders; use shadow-based depth definitions. Primary action: Obsidian Ink background with Ivory text. Secondary: Ghost Gray text with subtle glass background.
-- **The Forensic Matrix**: Hidden by default. Revealed via a "Detailed Audit" toggle. Uses a clean, borderless list style instead of a dense table.
-- **No-Line Rule**: Eliminate 1px borders. Use `shadow-[0_0_0_1px_rgba(0,0,0,0.05)]` for subtle definition.
+### 4.1 The Forensic Matrix (Bento Grid)
+- **Structure**: Uniform grid with 1x1 (square) and 2x1 (landscape) aspect ratios.
+- **Internal Alignment**: 
+    - **Labels**: Top-left (Space Grotesk, 10px, uppercase, `tracking-tight`).
+    - **Values**: Bottom-right (Geist Sans, Large/Bold).
+    - **Status Dots**: Top-right (Sunrise Gold for clean, Risk Rose for threat).
+- **Style**: No borders. Cards use `Sovereign Surface (#FFFFFF)` with a soft, diffused shadow.
 
-## 6. Layout Principles
-- **Centered Sanctuary**: Main content is contained within a 1000px max-width centered column.
-- **Floating Controls**: Tool navigation uses a glassmorphic pill-shaped bar.
-- **Depth Tonal Layering**: Use layered transparencies and `backdrop-filter` to create a sense of physical stacks.
+### 4.2 The Risk Score Hero
+- Large, asymmetrical circular gauge anchored 1/3rd into the layout.
+- Animated numerical score using Space Grotesk.
+
+### 4.3 Navigation & Action
+- **TopAppBar**: Glassmorphic (#FFFFFF/80 with 24px blur). No borders.
+- **Buttons**: 8px rounding. Primary action uses a subtle linear gradient (135°) from Sovereign Purple (#5D39E0) to its variant (#7657FA).
+- **Floating Ghost Button**: Transparent background with `Sovereign Purple` text and hover elevation. Used for "Back to Overview" transitions.
+
+## 5. Layout Principles: The Horizon Philosophy
+- **The "No-Line" Rule**: Prohibit 1px solid borders. Boundaries must be defined strictly through tonal background shifts (e.g., `Parchment Accent` against `Natural Parchment`) or negative space.
+- **The "No-Sidebar" Rule**: Sidebars are forbidden. All navigation is handled via the TopAppBar or contextual overlays.
+- **Asymmetry**: Offset headlines and grid placements to maintain an editorial, non-templated feel.
+
+## 6. Interaction: Parallel Batch Mode
+- **Aggregate State**: The Hero shows the "Batch Risk Index". Matrix cards show collective insights (Sum of threats, device counts).
+- **Vault Gallery**: A minimalist row of small thumbnails below the hero. Clicking a thumbnail initiates the drill-down transition.
+- **Detail State**: The UI focuses on a single file. The Floating Ghost Button allows returning to the Aggregate view.
 
 ## 7. Motion & Interaction
-- **Staggered Orchestration**: Metadata signals "fade-in" one by one with a slight upward slide.
-- **Spring Physics**: Use `stiffness: 100, damping: 20` for all interactive elements.
-- **The Pulse**: A very subtle, slow "breath" animation on the primary action button.
+- **Staggered Orchestration**: Elements mount via cascade delays (waterfall reveals).
+- **Spring Physics**: `stiffness: 100, damping: 20` for a weighty, premium feel.
+- **Perpetual Micro-Interactions**: Slow "breath" loop on active buttons and primary status indicators.
 
 ## 8. Anti-Patterns (Banned)
-- No hard black borders (#000000).
-- No pure monospaced layouts (except for raw data).
-- No dense tables in the primary view.
-- No "Industrial" square corners (>8px rounding required).
-- No emojis or generic AI-slop icons.
+- No emojis anywhere.
+- No `Inter` or generic system fonts.
+- No 1px solid borders or dividers.
+- No pure black (#000000).
+- No generic "3 equal cards" feature rows.
+- No AI copywriting clichés ("Elevate", "Seamless", "Next-Gen").
+- No `LABEL // YEAR` formatting.

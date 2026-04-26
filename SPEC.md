@@ -1,138 +1,75 @@
-# SPEC.md — Privacy Vault
+# SPEC.md — Privacy Vault (Reconciled)
 
-**Status:** Inferred from codebase + validation research
+**Status**: Verified against Codebase + Meridian Sanctuary Design System
+**Date**: 2026-04-26
 
 ---
 
-## Architecture Overview
+## 1. Architecture Overview
+- **Framework**: Next.js 15 (App Router), TypeScript, React 19 (Beta/Latest)
+- **Styling**: Tailwind CSS (Meridian Sanctuary Tokens)
+- **Privacy Pattern**: 100% Client-side processing. Zero server-side persistence or transmission of user files.
+- **Processing**: Forensic binary parsing via `exifreader`.
 
-- **Framework:** Next.js 15 (App Router), TypeScript, React 18
-- **Styling:** Tailwind CSS
-- **Pattern:** Client-side only processing
-- **Rendering:** Static export compatible
+## 2. Design System: The Meridian Sanctuary
+- **Aesthetic**: Solar Atelier (Premium Editorial).
+- **Core Rules**:
+  - **No-Line Rule**: No 1px borders; tonal layering for depth.
+  - **Typography**: Space Grotesk (Display) + Geist Sans (UI).
+  - **Vibe**: High-end, breathable, authoritative sanctuary.
 
-## Tech Stack
+## 3. Core Feature Flow: Forensic Scrubber
 
-| Layer | Technology |
-|-------|------------|
-| UI Framework | React 18 + TypeScript |
-| Build | Next.js 15 |
-| Styling | Tailwind CSS |
-| State | Zustand |
-| Bundling | Webpack |
+### Phase 1: Forensic Analysis (Detection)
+1. **Trigger**: User drops/selects an image.
+2. **Action**: `detectMetadata(file)` parses binary EXIF, IPTC, and XMP data.
+3. **UI State**: `analyzing` -> `detected`.
+4. **Output**: `ForensicReport` generated with `riskScore`, `violationFlags`, and `Signal` matrix (tag ID, property, hex offset).
 
-## Data Model
+### Phase 2: Clinical Neutralization
+1. **Trigger**: User clicks "NEUTRALIZE_THREAT".
+2. **Action**: `scrubImageMetadata(file)` redraws the image to a clean canvas, stripping all binary headers.
+3. **UI State**: `neutralizing` -> `neutralized`.
+4. **Verification**: Confirm `[+] THREAT_NEUTRALIZED` status and enable export.
 
-### Current (In-Memory)
+## 4. Technical Data Model
 
 ```typescript
+interface Signal {
+  id: string;
+  tagId?: string;       // 0x0112 style
+  label: string;
+  value: string;
+  hexOffset?: string;   // 0x00AA style
+  category: 'location' | 'device' | 'origin' | 'sensitive';
+  isHighRisk?: boolean;
+}
+
+interface ForensicReport {
+  riskLevel: 'low' | 'medium' | 'high';
+  riskScore: number;    // 0-100 weighted
+  signals: Signal[];
+  violationFlags: string[];
+}
+
 interface ScrubbedImageResult {
   id: string;
   originalFile: File;
-  cleanedCanvas: HTMLCanvasElement;
-  metadata: ImageMetadata;
-}
-
-interface ImageMetadata {
-  filename: string;
-  size: number;
-  dimensions: { width: number; height: number };
-  hasMetadata: boolean;
-  metadataTypes: string[];
+  cleanedCanvas: HTMLCanvasElement | null;
+  audit: ForensicReport | null;
+  isNeutralized: boolean;
+  status: 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
 }
 ```
 
-### Extended (Priority 1)
+## 5. Screen Map & Status
+- **Inspection Terminal (`/`)**: ✅ Implemented (Harmonized with Meridian Sanctuary).
+- **Vault Storage (`/vault`)**: 🔶 New (Priority 2).
+- **Batch ZIP Export**: 🔶 New (Priority 1).
+- **Network Traffic Monitor**: 🔶 New (Priority 3).
 
-```typescript
-interface DetectedMetadata {
-  gps: { latitude: number; longitude: number } | null;
-  camera: { make: string; model: string; serialNumber: string } | null;
-  timestamps: { created: string; modified: string } | null;
-  device: { software: string; host: string } | null;
-  removedFields: string[];
-}
-
-interface InspectionResult {
-  file: File;
-  detected: DetectedMetadata;
-  privacyScore: number; // 0-100
-}
-```
-
-## Screen Map
-
-| Screen | Route | Status |
-|--------|-------|--------|
-| Home / Tool Selection | `/` | ✅ Implemented |
-| Image Cleaner | `/` (tab) | ✅ Implemented |
-| Document Cleaner | `/` (tab) | ✅ Implemented |
-| Screenshot Redactor | `/` (tab) | ✅ Implemented |
-
-### Future Screens (Priority 1)
-
-| Screen | Route | Status |
-|--------|-------|--------|
-| Metadata Inspection Modal | `/` (inline modal) | 🔶 New |
-| Inspection Results Panel | `/` (inline panel) | 🔶 New |
-
-## Core Feature Flow
-
-### Current Image Cleaner Flow
-
-1. Upload images (via drag/drop or file picker)
-2. Canvas redraw strips metadata implicitly
-3. Display summary (metadata "removed")
-4. Choose export format (PNG/JPEG/WebP) + quality
-5. Download cleaned files
-
-### Priority 1 — Metadata Inspection Flow
-
-1. Upload images
-2. **NEW:** Parse EXIF binary data via JS library
-3. Display inspection results:
-   - What was detected (GPS, camera, timestamps)
-   - Privacy risk score
-   - What will be removed
-4. User confirms or adjusts
-5. Process removal
-6. Display verification (after state)
-
-### Priority 2 — ZIP Batch Download Flow
-
-1. Multiple images processed
-2. "Download All" button → generate ZIP
-3. Client-side ZIP creation (JSZip or similar)
-4. Single download for all cleaned files
-
-## Auth Flow
-
-- **None** — No authentication required
-- **No user accounts** — Privacy-first design
-
-## Edge Cases
-
-| Edge Case | Current Handling | Priority 1 Handling |
-|-----------|------------------|---------------------|
-| No EXIF data | Report "no metadata" | Show "clean" state |
-| Corrupted EXIF | Skip silently | Show warning |
-| Large files | Reject >10MB | Add chunked processing |
-| Unsupported format | Show "unsupported" error | More specific error |
-| GPS-only removal | N/A | Toggle UI per-field |
-
-## MVP Boundary
-
-- Image metadata inspection (JPEG primary)
-- ZIP batch download (up to 20 files)
-- Client-side only (no server)
-- No new tech dependencies (prioritize simplicity)
-
----
-
-## Extracted Sources
-
-- `src/app/page.tsx` — Main UI flow, tool selection
-- `src/hooks/useImageScrubber.ts` — Processing logic
-- `src/lib/metadata.ts` — Export, format handling
-- `CONVENTIONS.md` — Architecture patterns
-- `docs/research.md` — Validation signals
+## 6. Implementation Checklist (Audit Refinements)
+- [ ] Refactor `MetadataAudit.tsx` to follow the "No-Line" rule (remove borders, use `surface-container` tiers).
+- [ ] Implement "ZIP Batch Download" flow.
+- [ ] Implement "Granular Neutralization" (Per-field toggle).
+- [ ] Migrate component structure to `components/forensic/` for better isolation.

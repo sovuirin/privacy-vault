@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { FileUp, FileText } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface DocumentUploadProps {
   onFilesSelect: (files: File[]) => void;
@@ -57,8 +59,8 @@ export function DocumentUpload({
 
   return (
     <div
-      className={`border border-[#09090B] p-12 text-center transition-all bg-white relative overflow-hidden group cursor-pointer ${
-        isDragging ? "bg-[#10B981]/5 border-[#10B981]" : "hover:border-[#10B981]"
+      className={`relative w-full rounded-[2.5rem] p-1 transition-all duration-500 overflow-hidden cursor-pointer ${
+        isDragging ? "bg-primary shadow-2xl shadow-primary/20 scale-[1.01]" : "bg-surface-low hover:bg-surface-high"
       }`}
       onClick={handleClick}
       onDragOver={handleDragOver}
@@ -75,39 +77,40 @@ export function DocumentUpload({
         className="hidden"
       />
 
-      {/* Decorative Corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#09090B]" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#09090B]" />
-      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#09090B]" />
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#09090B]" />
+      <div className={`w-full py-16 rounded-[2.4rem] flex flex-col items-center justify-center space-y-6 border-2 border-dashed transition-colors duration-500 ${
+        isDragging ? "border-white/40 bg-primary/10" : "border-on-background/5"
+      }`}>
+        <motion.div 
+          animate={isDragging ? { scale: 1.1 } : { scale: 1 }}
+          className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500 ${
+            isDragging ? "bg-white text-primary" : "bg-surface-lowest text-on-background"
+          }`}
+        >
+          {isDragging ? <FileUp size={28} /> : <FileText size={28} />}
+        </motion.div>
 
-      <div className="space-y-6">
-        <div className="mx-auto w-12 h-12 flex items-center justify-center border border-[#09090B]">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="square" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
+        <div className="text-center space-y-2">
+          <h3 className={`text-xl font-bold tracking-tight transition-colors duration-500 ${
+            isDragging ? "text-white" : "text-on-background"
+          }`}>
+            {isProcessing ? "Analyzing Document Structure..." : isDragging ? "Ready for Deep-Scrub" : "Vault Document Import"}
+          </h3>
+          <p className={`text-xs font-light max-w-xs mx-auto leading-relaxed transition-colors duration-500 ${
+            isDragging ? "text-white/70" : "text-on-background/40"
+          }`}>
+            Removing hidden properties, revision history, and user identifiers.
+          </p>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-black uppercase tracking-widest">
-            {isProcessing ? "[ PREPARING_VAULT ]" : isDragging ? "[ RELEASE_DOCUMENTS ]" : "DROP_VAULT_DOCUMENTS"}
-          </p>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest max-w-sm mx-auto">
-            Deep-scrub forensic analysis for metadata and hidden properties.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          {["PDF", "DOCX", "PPTX", "XLSX"].map((ext) => (
-            <span key={ext} className="text-[9px] font-black border border-gray-200 px-2 py-0.5 tracking-tighter">
-              [{ext}]
+        <div className="flex gap-2">
+          {["PDF", "DOCX", "XLSX"].map((ext) => (
+            <span key={ext} className={`px-3 py-1 rounded-full text-[9px] font-bold tracking-widest transition-colors duration-500 ${
+              isDragging ? "bg-white/20 text-white" : "bg-surface-lowest text-on-background/60"
+            }`}>
+              {ext}
             </span>
           ))}
         </div>
-
-        <button className="btn-tactical bg-[#09090B] text-white">
-          SCAN_LOCAL_DIRECTORIES
-        </button>
       </div>
     </div>
   );

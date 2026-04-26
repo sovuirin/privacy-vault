@@ -30,5 +30,16 @@
 
 ## 5. Dashboard Forensic Verification
 - **Full-Spectrum Audits**: Verification must capture the ENTIRE dashboard state (Sidebar + Header + Main Content + Terminal). Registry or layout regressions in the "shell" are as critical as bugs in the core module.
-- **Verification Evidence**: High-resolution, full-page screenshots are the required evidence for "Visual-First" completion.
 
+## 6. Protocol Rigor & The "Lone-Wolf" Failure
+- **The "Lone-Wolf" Execution**: Proceeding to full implementation without an approved `implementation_plan.md` or delegating to `opencode` workers is a critical breach. Misinterpreting "Clean and simple" as a final directive bypasses the user's design-validation loop.
+- **Agentic vs. Autonomous**: "Agentic" behavior must remain within the boundaries of the established **Orchestration Protocol**. Implementation code must never be written inline by the Architect; it must be delegated to workers to maintain spec-rigidity.
+- **Approval Gate**: The `[APPROVED]` string is a non-negotiable prerequisite for execution.
+
+## 7. CSS & React Hygiene
+- **Tailwind Opacity Limits**: Tailwind's `/opacity` syntax fails on arbitrary CSS variables (e.g., `bg-[var(--background)]/80`) in `@apply`. Use standard RGBA declarations for variables to prevent Webpack build failures.
+- **Hook Placement**: Always declare React hooks (e.g., `useState`) at the top-level, before any conditional returns (e.g., `if (!data) return null`), to comply with the "Rules of Hooks" and ensure render stability.
+
+## 8. Atomic Hook-Component Refactors
+- **RCA - Build Instability**: Refactoring a core hook (e.g., `useImageScrubber`) without simultaneously updating all consuming components and pages (e.g., `page.tsx`) leads to immediate build failures and "ghost" lint errors.
+- **Protocol**: When performing a structural logic shift (e.g., single-item to batch), treat the hook, the components, and the main pages as a single atomic unit of change in the implementation plan.

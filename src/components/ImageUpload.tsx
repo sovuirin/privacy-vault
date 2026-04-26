@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { UploadCloud, Image as ImageIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface ImageUploadProps {
   onImageSelect: (files: File[]) => void;
@@ -44,8 +46,8 @@ export function ImageUpload({ onImageSelect, isProcessing }: ImageUploadProps) {
 
   return (
     <div
-      className={`border border-[#09090B] p-12 text-center transition-all bg-white relative overflow-hidden group cursor-pointer ${
-        isDragging ? "bg-[#10B981]/5 border-[#10B981]" : "hover:border-[#10B981]"
+      className={`relative w-full max-w-2xl mx-auto rounded-[2.5rem] p-1 transition-all duration-500 overflow-hidden cursor-pointer ${
+        isDragging ? "bg-primary shadow-2xl shadow-primary/20 scale-[1.02]" : "bg-surface-high/50 hover:bg-surface-high"
       }`}
       onClick={handleClick}
       onDragOver={handleDragOver}
@@ -62,39 +64,46 @@ export function ImageUpload({ onImageSelect, isProcessing }: ImageUploadProps) {
         className="hidden"
       />
 
-      {/* Decorative Corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-[#09090B]" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-[#09090B]" />
-      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-[#09090B]" />
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-[#09090B]" />
+      <div className={`w-full py-20 rounded-[2.4rem] flex flex-col items-center justify-center space-y-8 border-2 border-dashed transition-colors duration-500 ${
+        isDragging ? "border-white/40 bg-primary/10" : "border-on-background/10"
+      }`}>
+        <motion.div 
+          animate={isDragging ? { y: -10 } : { y: 0 }}
+          className={`h-20 w-20 rounded-3xl flex items-center justify-center shadow-2xl transition-all duration-500 ${
+            isDragging ? "bg-white text-primary" : "bg-surface-lowest text-on-background"
+          }`}
+        >
+          {isDragging ? <UploadCloud size={32} /> : <ImageIcon size={32} />}
+        </motion.div>
 
-      <div className="space-y-6">
-        <div className="mx-auto w-12 h-12 flex items-center justify-center border border-[#09090B]">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="square" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+        <div className="text-center space-y-3">
+          <h3 className={`text-2xl font-bold tracking-tight transition-colors duration-500 ${
+            isDragging ? "text-white" : "text-on-background"
+          }`}>
+            {isProcessing ? "Analyzing Patterns..." : isDragging ? "Drop to Neutralize" : "Import Sanctuary Files"}
+          </h3>
+          <p className={`text-sm font-light max-w-xs mx-auto leading-relaxed transition-colors duration-500 ${
+            isDragging ? "text-white/70" : "text-on-background/40"
+          }`}>
+            Your data remains in your custody. Clinical metadata removal is performed in-browser.
+          </p>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-black uppercase tracking-widest">
-            {isProcessing ? "[ ANALYZING_SOURCE ]" : isDragging ? "[ DROP_FILES_NOW ]" : "DROP_SOURCE_FILES"}
-          </p>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest max-w-sm mx-auto">
-            Client-side forensic scrubbing. No data transmission to remote nodes.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          {["JPG", "PNG", "WEBP", "GIF"].map((ext) => (
-            <span key={ext} className="text-[9px] font-black border border-gray-200 px-2 py-0.5 tracking-tighter">
-              [{ext}]
+        <div className="flex gap-2">
+          {["JPG", "PNG", "WEBP"].map((ext) => (
+            <span key={ext} className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest transition-colors duration-500 ${
+              isDragging ? "bg-white/20 text-white" : "bg-surface-lowest text-on-background/60"
+            }`}>
+              {ext}
             </span>
           ))}
         </div>
 
-        <button className="btn-tactical bg-[#09090B] text-white">
-          BROWSE_LOCAL_STORAGE
-        </button>
+        {!isDragging && !isProcessing && (
+          <button className="btn-sovereign !rounded-full !px-12">
+            Select Files
+          </button>
+        )}
       </div>
     </div>
   );

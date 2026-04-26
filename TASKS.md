@@ -11,15 +11,33 @@
 ### Tasks
 
 - [x] **T1. Core State Refinement**
-  - *Acceptance:* `src/types/vault.ts` includes `AuditMatrix`, `ViolationFlag`, and `MetadataSignal` types. Zustand store supports log streaming.
+  - *Acceptance:* `src/types/vault.ts` includes `AuditMatrix`, `ViolationFlag`, and `MetadataSignal` types.
 - [x] **T2. Forensic Detection Engine**
   - *Acceptance:* `detectMetadata` returns granular TAG_ID and HEX_OFFSET data using `exifreader`.
-- [x] **T3. High-Density Audit Matrix Component**
-  - *Acceptance:* Industrial UI table showing granular forensic signals. 1px borders, Geist Mono, no rounding.
-- [x] **T4. Risk Index & Violation Flags**
-  - *Acceptance:* Visual RISK_INDEX (0-100) and specific forensic violation tags (e.g., [FLAG_GPS_PRECISION]).
-- [x] **T5. Terminal Processing Log**
-  - *Acceptance:* Scrolling log showing real-time neutralization steps. (Integrated as clinical status status view in MetadataAudit)
+- [x] **T3. Meridian Sanctuary UI (Refactored T3/T4/T5)**
+  - *Acceptance:* Premium Bento-Grid Audit Matrix. Horizon navigation (Top bar). "No-Line" design rule.
+  - *Status:* COMPLETED (Replaced legacy industrial table).
+- [x] **T4. Optional Data Density**
+  - *Acceptance:* Toggle between "Executive View" and "Clinical Density" in Forensic Matrix.
+- [x] **T5. Risk Index Visualization**
+  - *Acceptance:* Premium circular gauge (RiskScoreHero) with Sovereign Purple styling.
+
+---
+
+## Epic: Meridian Sanctuary Logic (Batch & Parallel)
+
+**Goal:** Implement high-performance parallel batch processing and master-detail navigation.
+
+### Tasks
+
+- [x] **T6. Forensic Data Model Extension**
+  - *Acceptance:* `BatchFile` and `AggregatedReport` support in `lib/metadata.ts`.
+- [x] **T7. Batch State Management Hook**
+  - *Acceptance:* `useImageScrubber` supports multi-file state and memoized aggregate stats.
+- [x] **T8. Parallel Processing Loops**
+  - *Acceptance:* `analyzeBatch` and `neutralizeBatch` functions implemented.
+- [x] **T9. Master-Detail UI Logic**
+  - *Acceptance:* Support for 'aggregate' vs 'detail' modes in `ForensicMatrix`.
 
 ---
 

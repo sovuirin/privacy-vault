@@ -1,44 +1,90 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   scrubImageMetadata,
   isValidImageFormat,
-  ImageMetadata,
   detectMetadata,
   ForensicReport,
+  BatchFile,
+  AggregatedReport,
 } from "@/lib/metadata";
 
-export interface ScrubbedImageResult {
-  id: string;
-  originalFile: File;
-  cleanedCanvas: HTMLCanvasElement | null;
-  metadata: ImageMetadata | null;
-  audit: ForensicReport | null;
-  isNeutralized: boolean;
-  status: 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
-}
+// Removed ScrubbedImageResult in favor of lib/metadata BatchFile
 
 export interface UseImageScrubberReturn {
-  processedImages: ScrubbedImageResult[];
+  files: BatchFile[];
+  selectedFileId: string | null;
+  aggregatedReport: AggregatedReport | null;
   isProcessing: boolean;
   error: string | null;
   handleImageUpload: (files: File[]) => Promise<void>;
   neutralizeImage: (id: string) => Promise<void>;
+  analyzeBatch: () => Promise<void>;
+  neutralizeBatch: () => Promise<void>;
+  selectFile: (id: string | null) => void;
+
   reset: () => void;
 }
 
 export function useImageScrubber(): UseImageScrubberReturn {
-  const [processedImages, setProcessedImages] = useState<ScrubbedImageResult[]>(
-    []
-  );
+  const [files, setFiles] = useState<BatchFile[]>([]);
+  const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleImageUpload = useCallback(async (files: File[]) => {
-    if (!files.length) {
-      return;
-    }
+  const aggregatedReport = useMemo(() => {
+    if (files.length === 0) return null;
+
+    const reports = files.map(f => f.report).filter((r): r is ForensicReport => r !== null);
+    
+    const aggregated: AggregatedReport = {
+      totalFiles: files.length,
+      totalHighRiskSignals: reports.reduce((acc, r) => acc + r.signals.filter(s => s.isHighRisk).length, 0),
+      highestRiskScore: reports.length > 0 ? Math.max(...reports.map(r => r.riskScore)) : 0,
+      averageRiskScore: reports.length > 0 ? reports.reduce((acc, r) => acc + r.riskScore, 0) / reports.length : 0,
+      uniqueDeviceModels: Array.from(new Set(reports.map(r => r.signals.find(s => s.id === 'Model')?.value).filter((v): v is string => !!v))),
+      hasLocationData: reports.some(r => r.signals.some(s => s.category === 'location')),
+    };
+    return aggregated;
+  }, [files]);
+
+  const selectFile = useCallback((id: string | null) => setSelectedFileId(id), []);
+
+  const analyzeBatch = useCallback(async () => {
+    setIsProcessing(true);
+    const pendingFiles = files.filter(f => f.status === 'pending');
+    
+    await Promise.allSettled(pendingFiles.map(async (entry) => {
+      setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'analyzing' } : f));
+      try {
+        const report = await detectMetadata(entry.file);
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, report, status: 'detected' } : f));
+      } catch (err) {
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'error' } : f));
+      }
+    }));
+    setIsProcessing(false);
+  }, [files]);
+
+  const neutralizeBatch = useCallback(async () => {
+    setIsProcessing(true);
+    const detectFiles = files.filter(f => f.status === 'detected');
+
+    await Promise.allSettled(detectFiles.map(async (entry) => {
+      setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralizing' } : f));
+      try {
+        await scrubImageMetadata(entry.file);
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralized', isNeutralized: true } : f));
+      } catch (err) {
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'error' } : f));
+      }
+    }));
+    setIsProcessing(false);
+  }, [files]);
+
+  const handleImageUpload = useCallback(async (newFiles: File[]) => {
+    if (!newFiles.length) return;
 
     setError(null);
     setIsProcessing(true);
@@ -47,145 +93,66 @@ export function useImageScrubber(): UseImageScrubberReturn {
     const validFiles: File[] = [];
     const fileErrors: string[] = [];
 
-    for (const file of files) {
+    for (const file of newFiles) {
       if (!isValidImageFormat(file)) {
         fileErrors.push(`${file.name}: unsupported format`);
         continue;
       }
-
       if (file.size > maxSize) {
         fileErrors.push(`${file.name}: exceeds 10MB`);
         continue;
       }
-
       validFiles.push(file);
     }
 
-    try {
-      const settledResults = await Promise.allSettled(
-        validFiles.map(async (file) => {
-          const id = crypto.randomUUID();
-          
-          setProcessedImages((prev) => [
-            ...prev,
-            {
-              id,
-              originalFile: file,
-              cleanedCanvas: null,
-              metadata: null,
-              audit: null,
-              isNeutralized: false,
-              status: "analyzing",
-            },
-          ]);
+    const batchEntries: BatchFile[] = validFiles.map(f => ({
+      id: crypto.randomUUID(),
+      file: f,
+      report: null,
+      status: 'pending',
+      isNeutralized: false,
+    }));
 
-          try {
-            const audit = await detectMetadata(file);
-            setProcessedImages((prev) =>
-              prev.map((img) =>
-                img.id === id ? { ...img, audit, status: "detected" } : img
-              )
-            );
-            return id;
-          } catch (err) {
-            setProcessedImages((prev) =>
-              prev.map((img) =>
-                img.id === id ? { ...img, status: "error" } : img
-              )
-            );
-            throw err;
-          }
-        })
-      );
+    setFiles(prev => [...prev, ...batchEntries]);
+    setIsProcessing(false);
 
-      settledResults.forEach((result, index) => {
-        if (result.status === "rejected") {
-          const file = validFiles[index];
-          const reason =
-            result.reason instanceof Error
-              ? result.reason.message
-              : "failed to analyze image";
-          fileErrors.push(`${file.name}: ${reason}`);
-        }
-      });
-
-      if (fileErrors.length) {
-        setError(
-          `Some files were skipped: ${fileErrors
-            .slice(0, 4)
-            .join("; ")}${fileErrors.length > 4 ? "..." : ""}`
-        );
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to process image(s)";
-      setError(errorMessage);
-    } finally {
-      setIsProcessing(false);
+    if (fileErrors.length) {
+      setError(`Some files were skipped: ${fileErrors.slice(0, 4).join("; ")}${fileErrors.length > 4 ? "..." : ""}`);
     }
   }, []);
 
-  const neutralizeImage = useCallback(
-    async (id: string) => {
-      setError(null);
-      setIsProcessing(true);
+  const neutralizeImage = useCallback(async (id: string) => {
+    setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralizing' } : f));
+    try {
+      const entry = files.find(f => f.id === id);
+      if (!entry) throw new Error("File not found");
 
-      setProcessedImages((prev) =>
-        prev.map((img) =>
-          img.id === id ? { ...img, status: "neutralizing" } : img
-        )
-      );
-
-      try {
-        const image = processedImages.find((img) => img.id === id);
-        if (!image) {
-          throw new Error("Image not found");
-        }
-
-        const { canvas, metadata } = await scrubImageMetadata(
-          image.originalFile
-        );
-
-        setProcessedImages((prev) =>
-          prev.map((img) =>
-            img.id === id
-              ? {
-                  ...img,
-                  cleanedCanvas: canvas,
-                  metadata,
-                  isNeutralized: true,
-                  status: "neutralized",
-                }
-              : img
-          )
-        );
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to neutralize image";
-        setError(errorMessage);
-        setProcessedImages((prev) =>
-          prev.map((img) =>
-            img.id === id ? { ...img, status: "error" } : img
-          )
-        );
-      } finally {
-        setIsProcessing(false);
-      }
-    },
-    [processedImages]
-  );
+      await scrubImageMetadata(entry.file);
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralized', isNeutralized: true } : f));
+    } catch (err) {
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'error' } : f));
+    }
+  }, [files]);
 
   const reset = useCallback(() => {
-    setProcessedImages([]);
+    setFiles([]);
+    setSelectedFileId(null);
     setError(null);
   }, []);
 
   return {
-    processedImages,
+    files,
+    selectedFileId,
+    aggregatedReport,
     isProcessing,
     error,
     handleImageUpload,
     neutralizeImage,
+    analyzeBatch,
+    neutralizeBatch,
+    selectFile,
     reset,
   };
 }
+
+

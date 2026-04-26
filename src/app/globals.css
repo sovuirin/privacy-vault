@@ -4,92 +4,103 @@
 
 @layer base {
   :root {
-    --sterile-canvas: #FAFAFA;
-    --vault-surface: #FFFFFF;
-    --terminal-black: #09090B;
-    --metadata-gray: #52525B;
-    --structural-line: #E4E4E7;
-    --active-emerald: #10B981;
-    --risk-rose: #F43F5E;
+    /* The Meridian Sanctuary Palette */
+    --background: #fbf9f1; /* Natural Parchment */
+    --on-background: #1b1c17; /* Grounded Charcoal */
+    
+    --surface: #fbf9f1;
+    --surface-low: #f5f4ec;
+    --surface-high: #eae8e0;
+    --surface-highest: #e4e3db;
+    --surface-lowest: #ffffff;
+    
+    --primary: #5d39e0; /* Sovereign Purple */
+    --primary-container: #7657fa;
+    --on-primary: #ffffff;
+    
+    --secondary: #705d00; /* Sunrise Gold */
+    --secondary-container: #fcd400;
+    --on-secondary: #ffffff;
+
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+    --radius-xl: 2rem;
   }
 
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
   }
 
   body {
-    @apply antialiased min-h-screen bg-[#FAFAFA] text-[#09090B];
-    font-family: 'Geist Mono', monospace;
+    @apply min-h-screen bg-[var(--background)] text-[var(--on-background)];
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-space-grotesk), sans-serif;
   }
 }
 
 @layer components {
-  /* Industrial UI Components */
-  .btn-tactical {
-    @apply border border-[#09090B] px-4 py-2 font-bold uppercase tracking-widest text-[11px] transition-all;
-    border-radius: 0;
+  /* Meridian Sanctuary Utilities */
+  
+  .glass-header {
+    @apply sticky top-0 z-50 w-full backdrop-blur-3xl;
+    background-color: rgba(251, 249, 241, 0.8);
+    box-shadow: 0 20px 40px rgba(93, 57, 224, 0.04);
   }
 
-  .btn-tactical:hover {
-    @apply bg-[#09090B] text-[#FAFAFA];
+  .btn-sovereign {
+    @apply relative overflow-hidden px-8 py-3 font-bold tracking-tight text-white transition-all duration-300;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+    border-radius: var(--radius-md);
   }
 
-  .btn-tactical:active {
-    @apply translate-y-[1px];
+  .btn-sovereign:hover {
+    @apply scale-[1.02] brightness-110 shadow-lg shadow-primary/20;
   }
 
-  .container-tactical {
-    @apply border border-[#E4E4E7] bg-white;
-    border-radius: 0;
+  .btn-sovereign:active {
+    @apply scale-[0.98];
   }
 
-  .badge-tactical {
-    @apply font-mono text-[10px] font-bold uppercase tracking-widest px-2 py-0.5;
+  .card-bento {
+    @apply bg-[var(--surface-lowest)] p-8 transition-all duration-300;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 40px rgba(93, 57, 224, 0.04);
   }
 
-  .input-tactical {
-    @apply border-b border-[#09090B] bg-transparent py-2 font-mono text-sm outline-none transition-all;
-    border-radius: 0;
+  .card-bento:hover {
+    @apply shadow-xl -translate-y-1;
   }
 
-  .input-tactical:focus {
-    @apply border-b-2 border-[#10B981];
+  .label-luxe {
+    @apply text-[10px] font-bold uppercase tracking-[0.15em];
+    color: rgba(27, 28, 23, 0.6);
   }
 
-  /* Utilities for the Industrial look */
-  .data-label {
-    @apply text-[10px] font-bold uppercase tracking-[0.2em] text-[#52525B];
-  }
-
-  .data-value {
-    @apply text-[12px] font-bold tracking-tighter text-[#09090B];
+  /* No-Line Utility */
+  .no-line-boundary {
+    @apply border-none;
   }
 }
 
-/* Custom Scanline Animation */
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
-}
-
-.animate-scanline {
-  animation: scanline 3s linear infinite;
-}
-
-/* Custom Scrollbar for Tactical UI */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FAFAFA;
+  background: var(--surface-low);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #E4E4E7;
+  background: var(--surface-high);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #09090B;
+  background: var(--primary);
 }
