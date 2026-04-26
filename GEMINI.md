@@ -16,6 +16,8 @@ We operate under a **Compound Engineering** framework. Work is never "disposable
 - **Source of Truth:** The active implementation plan in `docs/superpowers/plans/` is the authoritative tracker for progress.
 - **Phase Marker:** `.antigravity/working_phase.md` indicates the high-level project stage.
 - **Shared Architecture:** Next.js applications (`apps/`) share types and database logic via `packages/`.
+- **Mandatory Verification:** ALL UI implementations and refactors MUST pass an automated runtime smoke test (e.g., Playwright) to verify page hydration and module resolution. "It builds" is no longer sufficient evidence for completion.
+- **Naming Hygiene:** Prevent naming collisions by using distinct suffixes for data models (e.g., `*Report`, `*Model`) and UI components (e.g., `*View`, `*Component`).
 
 ## 3. Subagent Orchestration
 
