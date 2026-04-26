@@ -36,24 +36,27 @@ export default function Dashboard() {
   } = useBatchProcessor();
 
   return (
-    <div 
-      style={{ backgroundColor: '#fbf9f1' }}
-      className="min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary text-[#1b1c17]"
-    >
+    <div className="relative h-full w-full overflow-hidden">
       <TopAppBar currentTool={currentTool} onToolChange={setCurrentTool} />
 
-      <main className="flex-1 container mx-auto px-12 pt-8 pb-24">
-        {currentTool === "terminal" && (
-          <div className="space-y-12 animate-in fade-in duration-700">
+      <main className="absolute inset-0 pt-28 pb-12 px-6 md:px-12">
+        {/* Tool: Terminal (Forensic Analysis) */}
+        <div 
+          className={`
+            absolute inset-0 pt-28 pb-12 px-6 md:px-12 transition-all duration-700 ease-out
+            ${currentTool === "terminal" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-8 pointer-events-none"}
+          `}
+        >
+          <div className="h-full w-full max-w-7xl mx-auto flex flex-col gap-8">
             <RiskScoreHero 
               score={selectedFileId ? (images.find(img => img.id === selectedFileId)?.report?.riskScore || 0) : (aggregatedReport?.highestRiskScore || 0)} 
               status={selectedFileId ? (images.find(img => img.id === selectedFileId)?.isNeutralized ? "Secure" : "Scanning") : (images.length > 0 ? "Batch Mode" : "Ready")} 
               label={selectedFileId ? "File Risk Score" : "Batch Risk Index"}
             />
 
-            <div className="space-y-16">
+            <div className="flex-1 min-h-0">
               {images.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-32 bg-surface-low/30 rounded-[3rem] space-y-8 relative overflow-hidden group">
+                <div className="h-full flex flex-col items-center justify-center bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/20 shadow-xl space-y-8 relative overflow-hidden group">
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <ImageUpload onImageSelect={handleImageUpload} isProcessing={imageProcessing} />
                   <div className="text-center space-y-1 relative">
@@ -62,13 +65,14 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-12">
-                  <div className="flex gap-4 overflow-x-auto pb-4 px-2">
+                <div className="h-full flex flex-col gap-8 overflow-hidden">
+                  {/* Thumbnails */}
+                  <div className="flex gap-4 overflow-x-auto pb-4 px-2 shrink-0 no-scrollbar">
                     {images.map((img) => (
                       <button
                         key={img.id}
                         onClick={() => selectFile(img.id === selectedFileId ? null : img.id)}
-                        className={`relative h-20 w-20 rounded-2xl overflow-hidden transition-all shrink-0 ${img.id === selectedFileId ? 'scale-110 shadow-2xl ring-4 ring-primary/20 z-10' : 'opacity-40 hover:opacity-100 hover:scale-105 shadow-lg'}`}
+                        className={`relative h-16 w-16 rounded-2xl overflow-hidden transition-all shrink-0 ${img.id === selectedFileId ? 'scale-110 shadow-xl ring-4 ring-primary/20 z-10' : 'opacity-40 hover:opacity-100 hover:scale-105'}`}
                       >
                         <img 
                           src={URL.createObjectURL(img.file)} 
@@ -82,114 +86,129 @@ export default function Dashboard() {
                     ))}
                   </div>
 
-                  {selectedFileId ? (
-                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="relative group rounded-[2rem] overflow-hidden bg-surface-high shadow-2xl">
-                        {images.find(img => img.id === selectedFileId)?.file && (
-                          <img 
-                            src={URL.createObjectURL(images.find(img => img.id === selectedFileId)!.file)} 
-                            className={`w-full max-h-[600px] object-contain transition-all duration-1000 ${images.find(img => img.id === selectedFileId)?.isNeutralized ? 'grayscale-0 scale-100' : 'grayscale-0 opacity-100 scale-[1.02]'}`}
-                            alt="Forensic Analysis"
-                          />
-                        )}
-                        {!images.find(img => img.id === selectedFileId)?.isNeutralized && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-primary/5 backdrop-blur-[2px]">
-                            <div className="h-[2px] w-full bg-primary/20 shadow-[0_0_20px_var(--primary)] animate-scanline" />
-                            <div className="absolute top-12 left-12 flex items-center gap-3">
-                              <div className="h-3 w-3 rounded-full bg-primary animate-pulse" />
-                              <span className="label-luxe !text-white">Forensic Scan Active</span>
+                  {/* Main Work Area */}
+                  <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-8">
+                    {selectedFileId ? (
+                      <>
+                        <div className="flex-1 relative rounded-[2rem] overflow-hidden bg-black/5 shadow-2xl">
+                          {images.find(img => img.id === selectedFileId)?.file && (
+                            <img 
+                              src={URL.createObjectURL(images.find(img => img.id === selectedFileId)!.file)} 
+                              className="absolute inset-0 w-full h-full object-contain"
+                              alt="Forensic Analysis"
+                            />
+                          )}
+                          {!images.find(img => img.id === selectedFileId)?.isNeutralized && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-primary/5 backdrop-blur-[1px]">
+                              <div className="h-[2px] w-full bg-primary/20 shadow-[0_0_20px_var(--primary)] animate-scanline" />
                             </div>
-                          </div>
-                        )}
-                      </div>
+                          )}
+                        </div>
 
-                      <ForensicMatrix 
-                        mode="detail"
-                        image={images.find(img => img.id === selectedFileId)} 
-                        onNeutralize={neutralizeImage} 
-                        isProcessing={imageProcessing}
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                      <div className="flex flex-col items-center gap-8">
-                        {!aggregatedReport && images.some(img => !img.report) && (
-                          <button 
-                            onClick={analyzeBatch}
-                            className="btn-sovereign max-w-sm w-full"
-                          >
-                            ANALYZE BATCH ({images.filter(img => !img.report).length} FILES)
-                          </button>
-                        )}
-                        
-                        {images.some(img => img.isNeutralized) && (
-                          <button 
-                            onClick={async () => {
-                              const { generateBatchZip } = await import("@/lib/zip");
-                              const blob = await generateBatchZip(images);
-                              const url = URL.createObjectURL(blob);
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = "neutralized_sanctuary_batch.zip";
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                            }}
-                            className="flex items-center gap-3 px-8 py-3 rounded-xl bg-secondary text-white font-bold shadow-lg hover:scale-[1.02] transition-all"
-                          >
-                            <span>DOWNLOAD NEUTRALIZED BATCH</span>
-                          </button>
-                        )}
-                      </div>
+                        <div className="w-full lg:w-[450px] overflow-y-auto no-scrollbar">
+                          <ForensicMatrix 
+                            mode="detail"
+                            image={images.find(img => img.id === selectedFileId)} 
+                            onNeutralize={neutralizeImage} 
+                            isProcessing={imageProcessing}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto no-scrollbar">
+                        <div className="flex flex-col items-center gap-8 mb-12">
+                          {!aggregatedReport && images.some(img => !img.report) && (
+                            <button 
+                              onClick={analyzeBatch}
+                              className="btn-sovereign max-w-sm w-full"
+                            >
+                              ANALYZE BATCH ({images.filter(img => !img.report).length} FILES)
+                            </button>
+                          )}
+                          
+                          {images.some(img => img.isNeutralized) && (
+                            <button 
+                              onClick={async () => {
+                                const { generateBatchZip } = await import("@/lib/zip");
+                                const blob = await generateBatchZip(images);
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement("a");
+                                link.href = url;
+                                link.download = "neutralized_sanctuary_batch.zip";
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(url);
+                              }}
+                              className="flex items-center gap-3 px-8 py-3 rounded-xl bg-secondary text-white font-bold shadow-lg hover:scale-[1.02] transition-all"
+                            >
+                              <span>DOWNLOAD NEUTRALIZED BATCH</span>
+                            </button>
+                          )}
+                        </div>
 
-                      <ForensicMatrix 
-                        mode="aggregate"
-                        files={images}
-                        aggregatedReport={aggregatedReport}
-                        isProcessing={imageProcessing}
-                        onNeutralize={neutralizeImage}
-                        onNeutralizeAll={neutralizeBatch}
-                      />
-                    </div>
-                  )}
+                        <ForensicMatrix 
+                          mode="aggregate"
+                          files={images}
+                          aggregatedReport={aggregatedReport}
+                          isProcessing={imageProcessing}
+                          onNeutralize={neutralizeImage}
+                          onNeutralizeAll={neutralizeBatch}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </div>
-        )}
+        </div>
 
-        {currentTool === "vault" && (
-          <div key="vault" className="space-y-12 animate-in fade-in slide-in-from-left-4 duration-500">
-            <div className="space-y-4">
+        {/* Tool: Vault */}
+        <div 
+          className={`
+            absolute inset-0 pt-28 pb-12 px-6 md:px-12 transition-all duration-700 ease-out
+            ${currentTool === "vault" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-8 pointer-events-none"}
+          `}
+        >
+          <div className="h-full w-full max-w-4xl mx-auto flex flex-col gap-12">
+            <div className="space-y-4 text-center">
               <h1 className="text-5xl font-bold tracking-tight">The Vault</h1>
-              <p className="text-lg text-on-background/60 max-w-xl">
-                Batch processing for your most sensitive documents. Every file is scrubbed of temporal and geographic metadata.
+              <p className="text-lg text-on-background/60 mx-auto max-w-xl">
+                Batch processing for your most sensitive documents.
               </p>
             </div>
 
-            <div className="card-bento p-12 space-y-12">
-              <DocumentUpload onFilesSelect={addFiles} isProcessing={batchProcessing} />
-              <BatchFileList files={batchFiles} onRemove={removeFile} onDownload={downloadFile} />
+            <div className="flex-1 min-h-0 bg-white/40 backdrop-blur-md rounded-[3rem] border border-white/20 shadow-xl p-12 overflow-y-auto no-scrollbar">
+              <div className="space-y-12">
+                <DocumentUpload onFilesSelect={addFiles} isProcessing={batchProcessing} />
+                <BatchFileList files={batchFiles} onRemove={removeFile} onDownload={downloadFile} />
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {currentTool === "monitor" && (
-          <div key="monitor" className="space-y-12 animate-in fade-in slide-in-from-left-4 duration-500">
+        {/* Tool: Monitor */}
+        <div 
+          className={`
+            absolute inset-0 pt-28 pb-12 px-6 md:px-12 transition-all duration-700 ease-out
+            ${currentTool === "monitor" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-8 pointer-events-none"}
+          `}
+        >
+          <div className="h-full w-full max-w-6xl mx-auto flex flex-col gap-12">
             <div className="space-y-4">
               <h1 className="text-5xl font-bold tracking-tight">System Monitor</h1>
               <p className="text-lg text-on-background/60 max-w-xl">
-                Real-time visualization of kernel daemons and neutralization telemetry.
+                Real-time visualization of kernel daemons.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="card-bento">
+            <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="card-bento flex flex-col">
                 <span className="label-luxe mb-6 block">Daemon Status</span>
-                <div className="space-y-6">
+                <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar">
                   {['GPS_STRIPPER', 'EXIF_OVERWRITER', 'IMAGIQ_VERIFIER'].map(d => (
-                    <div key={d} className="flex items-center justify-between">
+                    <div key={d} className="flex items-center justify-between p-4 rounded-2xl bg-black/5">
                       <span className="font-medium">{d}</span>
                       <div className="flex items-center gap-2">
                         <div className="h-2 w-2 rounded-full bg-secondary" />
@@ -199,9 +218,9 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              <div className="card-bento">
+              <div className="card-bento flex flex-col">
                 <span className="label-luxe mb-6 block">Sovereignty Logs</span>
-                <div className="space-y-3 font-mono text-[10px] opacity-60">
+                <div className="flex-1 space-y-3 font-mono text-[10px] opacity-60 overflow-y-auto no-scrollbar">
                   <p>[*] kernel_ready: 1.0.2</p>
                   <p>[✓] vault_node_alpha: secure</p>
                   <p>[!] forensic_analysis: image_001.jpg</p>
@@ -211,20 +230,14 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-        )}
+        </div>
       </main>
 
-      <footer className="h-12 border-t border-surface-high flex items-center justify-between px-12 bg-surface-low/30 backdrop-blur-sm">
-        <div className="flex gap-8 items-center">
-          <span className="label-luxe text-[8px] opacity-40">Privacy Vault © 2026</span>
-          <div className="h-1 w-1 rounded-full bg-surface-highest" />
-          <span className="label-luxe text-[8px] opacity-40">AES-256 Sovereignty</span>
-        </div>
-        <div className="flex gap-8 items-center">
-          <span className="label-luxe text-[8px] text-primary hover:opacity-100 transition-opacity cursor-pointer">Security Protocol</span>
-          <span className="label-luxe text-[8px] hover:opacity-100 transition-opacity cursor-pointer">Legal Sanctuary</span>
-        </div>
-      </footer>
+      {/* Floating System Status */}
+      <div className="fixed bottom-8 left-12 z-50 flex items-center gap-4">
+        <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
+        <span className="label-luxe text-[8px] opacity-40">AES-256 Sovereignty Active</span>
+      </div>
     </div>
   );
 }
