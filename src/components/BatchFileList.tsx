@@ -17,25 +17,26 @@ export function BatchFileList({
 }: BatchFileListProps) {
   if (files.length === 0) {
     return (
-      <div className="py-12 text-center bg-surface-low/30 rounded-3xl border border-dashed border-on-background/5">
-        <p className="label-luxe opacity-40">No files in sanctuary yet</p>
+      <div className="py-20 text-center bg-surface-low/30 rounded-[2.5rem] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-high/20 to-transparent" />
+        <p className="label-luxe opacity-40 relative">No files in sanctuary yet</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between px-2">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between px-6">
         <h3 className="label-luxe opacity-100">Files in Vault ({files.length})</h3>
         <div className="flex gap-4">
-          <div className="flex items-center gap-1.5 text-secondary text-[10px] font-bold uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 text-secondary text-[10px] font-bold uppercase tracking-widest bg-secondary/5 px-4 py-1 rounded-full">
             <CheckCircle2 size={12} />
             {files.filter(f => f.status === 'completed').length} Verified
           </div>
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         <AnimatePresence>
           {files.map((file) => (
             <motion.div
@@ -43,7 +44,7 @@ export function BatchFileList({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="group bg-surface-lowest p-6 rounded-[2rem] shadow-sm border border-on-background/5 hover:shadow-md transition-all duration-300"
+              className="group bg-surface-lowest p-8 rounded-[2.5rem] shadow-lg shadow-on-background/5 hover:shadow-xl transition-all duration-500 relative overflow-hidden"
             >
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-4 min-w-0 flex-1">

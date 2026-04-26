@@ -10,6 +10,7 @@ interface ForensicMatrixProps {
   image?: BatchFile | null;
   files?: BatchFile[];
   aggregatedReport?: AggregatedReport | null;
+  isProcessing?: boolean;
   onNeutralize: (id: string) => Promise<void>;
   onNeutralizeAll?: () => Promise<void>;
 }
@@ -19,6 +20,7 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
   image, 
   files,
   aggregatedReport,
+  isProcessing = false,
   onNeutralize,
   onNeutralizeAll 
 }) => {
@@ -38,9 +40,11 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
   }
 
   const signals = activeReport?.signals || [];
-  const violationFlags = activeReport?.violationFlags || [];
+  const violationFlags = mode === 'detail' 
+    ? (activeReport?.violationFlags || [])
+    : Array.from(new Set(files?.flatMap(f => f.report?.violationFlags || []) || []));
   const isNeutralized = mode === 'detail' ? (image?.isNeutralized || image?.status === "neutralized") : false;
-  const isNeutralizing = mode === 'detail' ? image?.status === "neutralizing" : false;
+  const isNeutralizing = mode === 'detail' ? (image?.status === "neutralizing" || isProcessing) : isProcessing;
 
   const categories = [
     { id: "location", label: "Geographic Traces", icon: MapPin },
@@ -49,11 +53,61 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
     { id: "sensitive", label: "System Metadata", icon: ShieldAlert },
   ];
 
-  const getSignalsByCategory = (catId: string) => 
-    signals.filter(s => s.category === catId);
+  const getSignalsByCategory = (catId: string) => {
+    if (mode === 'detail') {
+      return signals.filter(s => s.category === catId);
+    }
+    
+    // Aggregate mode: Summarize threats across the entire batch
+    if (!files || files.length === 0) return [];
+    
+    const summary: Record<string, { label: string, count: number, isHighRisk: boolean }> = {};
+    files.forEach(f => {
+      f.report?.signals.forEach(s => {
+        if (s.category === catId) {
+          if (!summary[s.id]) {
+            summary[s.id] = { label: s.label, count: 0, isHighRisk: !!s.isHighRisk };
+          }
+          summary[s.id].count++;
+        }
+      });
+    });
+    
+    return Object.entries(summary).map(([id, data]) => ({
+      id,
+      label: data.label,
+      value: `${data.count} Exposure${data.count > 1 ? 's' : ''}`,
+      percentage: (data.count / files.length) * 100,
+      isHighRisk: data.isHighRisk,
+      category: catId
+    }));
+  };
 
   return (
     <div className="space-y-12 py-8">
+      {mode === 'aggregate' && aggregatedReport && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
+          {[
+            { label: 'Batch Volume', value: files?.length, suffix: ' Files' },
+            { label: 'Avg Risk Index', value: Math.round(aggregatedReport.averageRiskScore), suffix: '%' },
+            { label: 'Critical Flags', value: files?.filter(f => f.report && f.report.riskLevel === 'high').length, suffix: ' High Risk' },
+            { label: 'Neutralized', value: files?.filter(f => f.isNeutralized).length, suffix: ' Ready' }
+          ].map((stat, i) => (
+            <div key={i} className="p-6 rounded-3xl bg-surface-low/50 border border-on-background/5 backdrop-blur-sm">
+              <div className="text-[10px] font-bold text-on-background/30 uppercase tracking-widest mb-2">{stat.label}</div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-light tracking-tighter">{stat.value}</span>
+                <span className="text-[10px] font-medium text-on-background/40">{stat.suffix}</span>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
       <div className="flex items-center justify-between">
         <h2 className="label-luxe opacity-100 text-sm">Forensic Matrix</h2>
         <div className="flex gap-4 items-center">
@@ -78,10 +132,13 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {categories.map((cat, idx) => {
           const catSignals = getSignalsByCategory(cat.id);
           const Icon = cat.icon;
+          
+          // Create asymmetric bento grid
+          const spanClass = idx === 0 || idx === 3 ? "md:col-span-2" : "md:col-span-1";
           
           return (
             <motion.div
@@ -89,32 +146,59 @@ export const ForensicMatrix: React.FC<ForensicMatrixProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="card-bento min-h-[280px] flex flex-col no-line-boundary"
+              className={`card-bento min-h-[300px] flex flex-col no-line-boundary ${spanClass}`}
             >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-lg bg-surface-low text-primary">
-                  <Icon size={18} />
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-surface-low text-primary shadow-inner">
+                    <Icon size={20} />
+                  </div>
+                  <span className="label-luxe">{cat.label}</span>
                 </div>
-                <span className="label-luxe">{cat.label}</span>
+                {catSignals.some(s => s.isHighRisk) && !isNeutralized && (
+                  <div className="h-2 w-2 rounded-full bg-primary animate-ping" />
+                )}
               </div>
 
-              <div className="flex-1 space-y-4">
+              <div className="flex-1 space-y-6">
                 {catSignals.length > 0 ? (
-                  catSignals.slice(0, showDetails ? undefined : 2).map((s) => (
-                    <div key={s.id} className="space-y-1">
-                      <div className="text-[11px] font-bold text-on-background/40 uppercase tracking-tighter">
-                        {s.label}
+                  <div className={`grid ${spanClass.includes('col-span-2') ? 'grid-cols-2 gap-x-8' : 'grid-cols-1'} gap-y-6`}>
+                    {catSignals.slice(0, showDetails ? undefined : 4).map((s) => (
+                      <div key={s.id} className="space-y-1.5 group">
+                        <div className="text-[10px] font-bold text-on-background/30 uppercase tracking-widest group-hover:text-on-background/50 transition-colors">
+                          {s.label}
+                        </div>
+                        <div className={`text-sm font-medium tracking-tight break-all ${s.isHighRisk && !isNeutralized ? 'text-primary' : 'text-on-background/80'}`}>
+                          {isNeutralized ? (
+                            <span className="opacity-30 tracking-[0.3em]">••••••••</span>
+                          ) : (
+                            <>
+                              <div>{s.value || 'None'}</div>
+                              {mode === 'aggregate' && 'percentage' in s && (
+                                <div className="mt-1.5 h-1 w-full bg-on-background/5 rounded-full overflow-hidden">
+                                  <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(s as any).percentage}%` }}
+                                    className={`h-full ${s.isHighRisk ? 'bg-primary' : 'bg-secondary'}`} 
+                                  />
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className={`text-sm font-medium tracking-tight ${s.isHighRisk && !isNeutralized ? 'text-primary' : 'text-on-background'}`}>
-                        {isNeutralized ? "• • • • • •" : s.value}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-on-background/20 italic text-[11px]">
-                    No signals detected
+                  <div className="flex items-center justify-center h-full text-on-background/10 italic text-[11px] font-medium uppercase tracking-widest">
+                    Signature Clear
                   </div>
                 )}
+              </div>
+              
+              {/* Subtle background motif */}
+              <div className="absolute -bottom-4 -right-4 opacity-[0.02] text-on-background">
+                <Icon size={120} />
               </div>
             </motion.div>
           );

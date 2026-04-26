@@ -13,8 +13,8 @@ export const RiskScoreHero: React.FC<RiskScoreHeroProps> = ({ score, status, lab
   return (
     <section className="flex flex-col md:flex-row items-center gap-16 py-12 mb-16">
       <div className="flex-1 space-y-6">
-        <div className="inline-block px-4 py-1.5 rounded-full bg-secondary-container/10 border border-secondary/20">
-          <span className="label-luxe text-secondary">System Status: {status}</span>
+        <div className="inline-block px-6 py-2 rounded-full bg-surface-low text-secondary shadow-inner-sm">
+          <span className="label-luxe text-[9px] tracking-[0.25em]">System Status: {status}</span>
         </div>
         <h1 className="text-7xl font-bold tracking-tight leading-[0.9] text-on-background">
           Your Digital <br />

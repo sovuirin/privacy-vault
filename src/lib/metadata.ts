@@ -27,6 +27,7 @@ export interface BatchFile {
   report: ForensicReport | null;
   status: 'pending' | 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
   isNeutralized: boolean;
+  neutralizedBlob?: Blob;
 }
 
 export interface AggregatedReport {
@@ -351,15 +352,20 @@ export async function detectMetadata(file: File): Promise<ForensicReport> {
   addSignal('Make', 'Manufacturer', 'device');
   addSignal('Model', 'Device Model', 'device');
   addSignal('SerialNumber', 'Serial Number', 'device', true);
+  addSignal('InternalSerialNumber', 'Internal Serial', 'device', true);
+  addSignal('CameraSerialNumber', 'Camera Serial', 'device', true);
 
   // Origin signals
   addSignal('Software', 'Processing Software', 'origin');
   addSignal('DateTimeOriginal', 'Timestamp (Original)', 'origin', true);
+  addSignal('CreateDate', 'Creation Date', 'origin', true);
+  addSignal('ModifyDate', 'Modification Date', 'origin');
   
   // Sensitive signals
   addSignal('OwnerName', 'Owner Identity', 'sensitive', true);
   addSignal('Artist', 'Creator/Artist', 'sensitive', true);
   addSignal('Copyright', 'Copyright Notice', 'sensitive');
+  addSignal('UserComment', 'User Comments', 'sensitive', true);
 
   // Calculate risk score
   const highRiskCount = signals.filter(s => s.isHighRisk).length;

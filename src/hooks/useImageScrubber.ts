@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import {
-  scrubImageMetadata,
+import { 
+  detectMetadata, 
+  scrubImageMetadata, 
+  buildCleanedImageBlob,
   isValidImageFormat,
-  detectMetadata,
   ForensicReport,
   BatchFile,
   AggregatedReport,
@@ -69,17 +70,37 @@ export function useImageScrubber(): UseImageScrubberReturn {
 
   const neutralizeBatch = useCallback(async () => {
     setIsProcessing(true);
-    const detectFiles = files.filter(f => f.status === 'detected');
+    setError(null);
+    
+    // Process all files that aren't already neutralized
+    const targetFiles = files.filter(f => !f.isNeutralized && f.status !== 'error');
 
-    await Promise.allSettled(detectFiles.map(async (entry) => {
-      setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralizing' } : f));
+    if (targetFiles.length === 0) {
+      setIsProcessing(false);
+      return;
+    }
+
+    await Promise.allSettled(targetFiles.map(async (entry) => {
       try {
-        await scrubImageMetadata(entry.file);
-        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralized', isNeutralized: true } : f));
+        // If file is pending, we must analyze it first to generate the report
+        if (entry.status === 'pending' || entry.status === 'analyzing') {
+          setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'analyzing' } : f));
+          const report = await detectMetadata(entry.file);
+          setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, report, status: 'detected' } : f));
+        }
+
+        // Now neutralize
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralizing' } : f));
+        const { canvas } = await scrubImageMetadata(entry.file);
+        const blob = await buildCleanedImageBlob(canvas);
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob } : f));
       } catch (err) {
+        console.error(`Failed to neutralize ${entry.file.name}:`, err);
         setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'error' } : f));
+        setError(prev => prev ? `${prev}; Failed: ${entry.file.name}` : `Neutralization failed for: ${entry.file.name}`);
       }
     }));
+    
     setIsProcessing(false);
   }, [files]);
 
@@ -114,6 +135,19 @@ export function useImageScrubber(): UseImageScrubberReturn {
     }));
 
     setFiles(prev => [...prev, ...batchEntries]);
+    
+    // Automatically trigger analysis for newly added files
+    setIsProcessing(true);
+    await Promise.allSettled(batchEntries.map(async (entry) => {
+      setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'analyzing' } : f));
+      try {
+        const report = await detectMetadata(entry.file);
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, report, status: 'detected' } : f));
+      } catch (err) {
+        setFiles(prev => prev.map(f => f.id === entry.id ? { ...f, status: 'error' } : f));
+      }
+    }));
+    
     setIsProcessing(false);
 
     if (fileErrors.length) {
@@ -127,8 +161,9 @@ export function useImageScrubber(): UseImageScrubberReturn {
       const entry = files.find(f => f.id === id);
       if (!entry) throw new Error("File not found");
 
-      await scrubImageMetadata(entry.file);
-      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralized', isNeutralized: true } : f));
+      const { canvas } = await scrubImageMetadata(entry.file);
+      const blob = await buildCleanedImageBlob(canvas);
+      setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'neutralized', isNeutralized: true, neutralizedBlob: blob } : f));
     } catch (err) {
       setFiles(prev => prev.map(f => f.id === id ? { ...f, status: 'error' } : f));
     }

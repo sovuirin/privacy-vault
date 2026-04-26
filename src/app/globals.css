@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* The Meridian Sanctuary Palette */
     --background: #fbf9f1; /* Natural Parchment */
     --on-background: #1b1c17; /* Grounded Charcoal */
@@ -28,13 +29,17 @@
     --radius-xl: 2rem;
   }
 
-  html {
+  html, body {
+    background-color: #fbf9f1 !important;
+    color: #1b1c17 !important;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
   }
 
   body {
-    @apply min-h-screen bg-[var(--background)] text-[var(--on-background)];
+    @apply min-h-screen;
     font-family: var(--font-geist-sans), system-ui, sans-serif;
   }
 
@@ -67,23 +72,31 @@
   }
 
   .card-bento {
-    @apply bg-[var(--surface-lowest)] p-8 transition-all duration-300;
+    @apply bg-[var(--surface-lowest)] p-8 transition-all duration-300 relative overflow-hidden;
     border-radius: var(--radius-xl);
-    box-shadow: 0 20px 40px rgba(93, 57, 224, 0.04);
+    box-shadow: 
+      0 4px 6px -1px rgba(93, 57, 224, 0.05), 
+      0 20px 40px -4px rgba(93, 57, 224, 0.08);
   }
 
   .card-bento:hover {
-    @apply shadow-xl -translate-y-1;
+    @apply shadow-2xl -translate-y-1;
+    box-shadow: 
+      0 10px 15px -3px rgba(93, 57, 224, 0.1), 
+      0 30px 60px -5px rgba(93, 57, 224, 0.12);
+  }
+
+  .gradient-surface {
+    background: radial-gradient(circle at top left, var(--surface-lowest), var(--surface-low));
   }
 
   .label-luxe {
-    @apply text-[10px] font-bold uppercase tracking-[0.15em];
-    color: rgba(27, 28, 23, 0.6);
+    @apply text-[10px] font-bold uppercase tracking-[0.2em];
+    color: rgba(27, 28, 23, 0.5);
   }
 
-  /* No-Line Utility */
   .no-line-boundary {
-    @apply border-none;
+    border: none !important;
   }
 }
 

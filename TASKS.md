@@ -47,8 +47,8 @@
 
 ### Tasks
 
-- [ ] **T6.** Add JSZip library and generation function
-- [ ] **T7.** Add 'Download All as ZIP' button to ImageDownload component.
+- [x] **T6.** Add JSZip library and generation function
+- [x] **T7.** Add 'Download All as ZIP' button to ImageDownload component.
 
 ---
 
