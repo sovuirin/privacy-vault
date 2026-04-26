@@ -1,50 +1,50 @@
 # Design System: Privacy Vault
 
 ## 1. Visual Theme & Atmosphere
-**Industrial Privacy (High-Rigidity)** — A tactical, high-precision interface that feels like a physical hardware manual translated into a digital clean room. It prioritizes data integrity over decorative comfort. The atmosphere is clinical, secure, and authoritative.
+**The Glass Monolith (Elite Minimalism)** — A restrained, gallery-airy interface that feels like a high-end luxury service. It prioritizes clarity, trust, and premium user experience over raw technical density. The atmosphere is calm, secure, and ethereal—like a private digital sanctuary.
 
-- **Density:** 7 (Data-dense, utility-first)
-- **Variance:** 6 (Asymmetric, grid-bound layouts)
-- **Motion:** 3 (Mechanical, "clicky" state changes; no soft springs)
+- **Density:** 3 (Art Gallery Airy - generous whitespace)
+- **Variance:** 4 (Balanced but with intentional offsets)
+- **Motion:** 7 (Fluid, "springy" transitions; staggered orchestration)
 
 ## 2. Color Palette & Roles
-- **Sterile Canvas** (#FAFAFA) — Primary background
-- **Vault Surface** (#FFFFFF) — Interactive containers
-- **Terminal Black** (#09090B) — Primary text (Zinc-950)
-- **Metadata Gray** (#52525B) — Secondary labels and logs
-- **Structural Line** (#E4E4E7) — 1px borders (Zinc-200)
-- **Active Emerald** (#10B981) — Functional accent for "Cleaned" and "Safe"
-- **Risk Rose** (#F43F5E) — Danger accent for "Detected Risks"
+- **Ivory Canvas** (#FDFDFD) — Primary background surface
+- **Frosted Surface** (rgba(255, 255, 255, 0.4)) — Glassmorphic containers with 20px blur
+- **Obsidian Ink** (#18181B) — Primary text (Zinc-900 depth)
+- **Ghost Gray** (#A1A1AA) — Secondary labels and muted metadata
+- **Active Emerald** (#10B981) — Refined accent for "Secure" and "Cleaned"
+- **Risk Rose** (#EF4444) — Sophisticated danger accent for "Detected Risks"
 
 ## 3. Typography Rules
-- **Display & Body:** Geist Mono — 100% Monospace usage. 
-- **Hierarchy:** Established through tracking (`tracking-tighter` for headers, `tracking-wider` for labels) and weight (700 for actions, 400 for data).
-- **Anti-Pattern:** Never use Sans-Serif or Serif fonts. The entire UI must feel like a generated report.
+- **Display/Headlines**: **Cormorant Garamond** — Elegant, high-contrast Serif. Used for status reports and section headers to signal "Heritage & Trust."
+- **Interface/Body**: **Geist Sans** — Clean, modern Sans-Serif. Primary font for all functional UI and navigation.
+- **Forensic/Data**: **Geist Mono** — Strictly reserved for raw data strings, hex offsets, and tag IDs.
+- **Hierarchy**: Established through large margins and weight. Headlines use `tracking-tight`.
 
 ## 4. The Hero: "The Inspection Point"
-The Hero section is asymmetric.
-- **Left Align:** Large headline in Geist Mono (Bold, tracking-tighter).
-- **Inline Tagging:** Embed small, high-contrast metadata tags (e.g., `[GPS:LOCKED]`, `[EXIF:EXPOSED]`) directly within the headline text as visual punctuation. These tags should have a solid Terminal Black background with Active Emerald or Risk Rose text.
-- **No Filler:** No "Welcome" text. The UI starts immediately with the "Drop Zone".
+The Hero section is balanced and airy.
+- **Centered Focus**: Large headline in Cormorant Garamond (Italic/Regular mix).
+- **Floating Dropzone**: A single, minimalist upload zone with a soft "whisper shadow" and 12px rounding.
+- **Visual Punctuation**: Subtle, rounded status badges (e.g., `(Secure)`) that appear with a slight "float" animation.
 
 ## 5. Component Stylings
-- **Buttons:** 0px rounding (square). 1px solid Terminal Black border. Invert colors on hover (Black bg, White text). -2px "click" transform.
-- **Cards/Containers:** Square corners. No shadows. Separation via 1px Structural Lines.
-- **Status Badges:** `[ SQUARE BRACKETS ]` instead of pills. Monospace text only.
-- **Inputs:** Underline style (bottom border only) for a blueprint/form feel. Focus state: 2px Active Emerald bottom border.
+- **Buttons**: 8px - 12px rounding (soft). No hard borders; use shadow-based depth definitions. Primary action: Obsidian Ink background with Ivory text. Secondary: Ghost Gray text with subtle glass background.
+- **The Forensic Matrix**: Hidden by default. Revealed via a "Detailed Audit" toggle. Uses a clean, borderless list style instead of a dense table.
+- **No-Line Rule**: Eliminate 1px borders. Use `shadow-[0_0_0_1px_rgba(0,0,0,0.05)]` for subtle definition.
 
 ## 6. Layout Principles
-- **The Split View:** Fixed-width left sidebar for controls; expansive right-side "Lightbox" for image inspection and scrubbing logs.
-- **The Grid:** All elements must align to a strict 8px terminal grid. 
-- **Responsive:** Collapse to a single-column "Report" view on mobile.
+- **Centered Sanctuary**: Main content is contained within a 1000px max-width centered column.
+- **Floating Controls**: Tool navigation uses a glassmorphic pill-shaped bar.
+- **Depth Tonal Layering**: Use layered transparencies and `backdrop-filter` to create a sense of physical stacks.
 
 ## 7. Motion & Interaction
-- **Scanline Shimmer:** A horizontal 1px line that moves vertically across images during the "Scrubbing" phase.
-- **Instant Snap:** Tab switching and modal opens should feel "instant" or use a 100ms sharp fade. No elastic bouncing.
+- **Staggered Orchestration**: Metadata signals "fade-in" one by one with a slight upward slide.
+- **Spring Physics**: Use `stiffness: 100, damping: 20` for all interactive elements.
+- **The Pulse**: A very subtle, slow "breath" animation on the primary action button.
 
 ## 8. Anti-Patterns (Banned)
-- No rounded corners (> 2px).
-- No Inter, Roboto, or system sans-serifs.
-- No shadows or depth (Flat UI only).
-- No emojis or generic Lucide icons (use custom-styled SVGs or character-based icons).
-- No "Success!" or "Error!" headers — use `[STATUS:CLEANED]` or `[ERROR:FILE_CORRUPT]`.
+- No hard black borders (#000000).
+- No pure monospaced layouts (except for raw data).
+- No dense tables in the primary view.
+- No "Industrial" square corners (>8px rounding required).
+- No emojis or generic AI-slop icons.
