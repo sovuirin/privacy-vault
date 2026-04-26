@@ -21,9 +21,18 @@ export default {
         }
       },
       fontFamily: {
-        display: ['var(--font-syne)', 'var(--font-space-grotesk)', 'sans-serif'],
-        sans: ['var(--font-bricolage)', 'var(--font-inter)', 'sans-serif'],
-        mono: ['var(--font-jetbrains-mono)', 'monospace'],
+        display: ['Geist Mono', 'monospace'],
+        sans: ['Geist Mono', 'monospace'],
+        mono: ['Geist Mono', 'monospace'],
+      },
+      keyframes: {
+        scan: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(1000%)' },
+        }
+      },
+      animation: {
+        scan: 'scan 2s linear infinite',
       },
       backdropBlur: {
         xs: '2px',
