@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { ScrubbedImageResult } from "@/hooks/useImageScrubber";
+import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
 
 interface ImagePreviewProps {
   images: ScrubbedImageResult[];

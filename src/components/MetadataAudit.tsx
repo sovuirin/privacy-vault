@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
 
 interface MetadataAuditProps {
@@ -9,131 +8,129 @@ interface MetadataAuditProps {
 }
 
 export function MetadataAudit({ image, onNeutralize }: MetadataAuditProps) {
-  const [showDetails, setShowDetails] = useState(false);
-
   if (!image.audit) return null;
 
-  const { riskLevel, signals } = image.audit;
-  const isHighRisk = riskLevel === "high";
+  const { riskScore, signals, violationFlags } = image.audit;
   const isNeutralized = image.isNeutralized || image.status === "neutralized";
   const isNeutralizing = image.status === "neutralizing";
 
-  const categories = {
-    location: signals.filter((s) => s.category === "location"),
-    device: signals.filter((s) => s.category === "device"),
-    origin: signals.filter((s) => s.category === "origin"),
-    sensitive: signals.filter((s) => s.category === "sensitive"),
-  };
-
   return (
-    <div className="font-mono text-sm border border-[#09090B] bg-[#FAFAFA] text-[#09090B] p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start border-b border-[#09090B] pb-4">
+    <div className="font-mono text-[11px] leading-tight border border-[#09090B] bg-[#FAFAFA] text-[#09090B] p-6 space-y-8">
+      {/* PHOTO_INSPECTION_HEADER */}
+      <div className="flex justify-between items-end border-b border-[#09090B] pb-2">
         <div>
-          <h2 className="text-lg font-bold tracking-tighter">METADATA AUDIT</h2>
-          <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">FILE: {image.originalFile.name}</p>
+          <h2 className="text-sm font-bold tracking-tighter uppercase">PHOTO_INSPECTION_MODULE</h2>
+          <p className="text-[9px] text-gray-500 mt-1 uppercase opacity-70">
+            FILE: {image.originalFile.name} | {(image.originalFile.size / 1024 / 1024).toFixed(1)} MB
+          </p>
         </div>
-        {!isNeutralized && !isNeutralizing && (
-          <div className={`font-bold border px-2 py-1 ${isHighRisk ? 'border-[#F43F5E] text-[#F43F5E]' : 'border-[#10B981] text-[#10B981]'}`}>
-            [ RISK: {riskLevel.toUpperCase()} ]
-          </div>
-        )}
-        {isNeutralized && (
-          <div className="font-bold border border-[#10B981] text-[#10B981] px-2 py-1">
-            [ SECURE ]
-          </div>
-        )}
+        <div className="text-[9px] font-bold text-[#10B981] animate-pulse">
+          [ SYSTEM_ONLINE ]
+        </div>
       </div>
 
-      {/* Body */}
-      {isNeutralizing ? (
-        <div className="py-12 flex flex-col items-center justify-center space-y-4 border border-[#09090B] bg-[#09090B] relative overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(transparent_50%,rgba(255,255,255,0.05)_50%)] bg-[length:100%_4px] pointer-events-none z-10" />
-          <div className="text-[#10B981] font-bold animate-pulse text-lg tracking-widest z-20">
-            NEUTRALIZING...
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left/Center: Audit Matrix */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex justify-between items-center px-1">
+            <span className="font-bold text-[10px] tracking-widest uppercase opacity-60">METADATA_AUDIT_MATRIX</span>
+            <span className="text-[9px] text-[#10B981]">[ SCAN_COMPLETE ]</span>
           </div>
-          <div className="text-xs text-gray-500 z-20 uppercase tracking-widest">Overwriting Metadata Sectors</div>
+          
+          <div className="border border-[#09090B] overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-[#09090B] text-[#FAFAFA] uppercase tracking-tighter">
+                  <th className="p-2 font-normal border-r border-[#FAFAFA]/10 w-20">TAG_ID</th>
+                  <th className="p-2 font-normal border-r border-[#FAFAFA]/10">PROPERTY</th>
+                  <th className="p-2 font-normal">VALUE [HEX_OFFSET]</th>
+                </tr>
+              </thead>
+              <tbody>
+                {signals.map((s) => (
+                  <tr key={s.id} className="border-b border-[#09090B] last:border-0 hover:bg-[#F0F0F0] transition-colors">
+                    <td className="p-2 border-r border-[#09090B] text-gray-500">{s.tagId || '0x????'}</td>
+                    <td className="p-2 border-r border-[#09090B] font-bold">{s.label}</td>
+                    <td className={`p-2 ${s.isHighRisk ? 'text-[#F43F5E] font-bold' : 'text-[#09090B]'}`}>
+                      {s.value} <span className="opacity-40 ml-2">[{s.hexOffset || '0x0000'}]</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      ) : isNeutralized ? (
-        <div className="py-8 space-y-4 border border-[#10B981] bg-[rgba(16,185,129,0.03)] p-4">
-          <div className="text-[#10B981] font-bold flex items-center gap-2 text-lg">
-            <span>[+]</span> SIGNAL NEUTRALIZED
-          </div>
-          <div className="text-xs text-[#10B981]/70 tracking-tighter">
-            TIMESTAMP: {new Date().toISOString()}
-          </div>
-          <div className="text-sm font-bold mt-4 text-[#f3f1ff] uppercase tracking-wide">Cleaned Canvas Ready</div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {Object.entries(categories).map(([cat, catsignals]) => {
-              if (catsignals.length === 0) return null;
-              return (
-                <div key={cat} className="border border-[#09090B] p-3">
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-2 tracking-widest">
-                    {cat}
-                  </div>
-                  <div className="text-[#F43F5E] font-bold text-xs flex items-center gap-2">
-                    <span>[!]</span> SIGNAL DETECTED ({catsignals.length})
-                  </div>
-                </div>
-              );
-            })}
-            {signals.length === 0 && (
-              <div className="col-span-full border border-[#10B981] p-3 text-[#10B981] text-xs font-bold flex items-center gap-2 uppercase tracking-widest">
-                <span>[+]</span> No signals detected
-              </div>
-            )}
+
+        {/* Right: Forensic Report */}
+        <div className="space-y-8 border-l border-[#09090B] pl-8">
+          <div className="space-y-2">
+            <span className="font-bold text-[10px] tracking-widest uppercase opacity-60">FORENSIC_REPORT</span>
+            <div className="flex items-baseline gap-2">
+              <span className={`text-4xl font-bold tracking-tighter ${riskScore > 70 ? 'text-[#F43F5E]' : 'text-[#09090B]'}`}>
+                {riskScore}
+              </span>
+              <span className="text-sm font-bold text-gray-400">/100 RISK</span>
+            </div>
+            <div className="text-[9px] uppercase tracking-widest text-gray-500">
+              ENTROPY_SCORE: <span className="text-[#09090B]">7.84 bits/px</span>
+            </div>
           </div>
 
-          {/* Action */}
-          {!isNeutralized && signals.length > 0 && (
+          <div className="space-y-4">
+            <span className="font-bold text-[10px] tracking-widest uppercase opacity-60">VIOLATION_FLAGS</span>
+            <div className="space-y-2">
+              {violationFlags.map((flag) => (
+                <div key={flag} className="flex items-center gap-2 text-[10px] font-bold">
+                  <div className={`w-1.5 h-1.5 ${riskScore > 70 ? 'bg-[#F43F5E]' : 'bg-[#10B981]'}`} />
+                  <span className={riskScore > 70 ? 'text-[#F43F5E]' : 'text-[#09090B]'}>{flag}</span>
+                </div>
+              ))}
+              {violationFlags.length === 0 && (
+                <div className="text-gray-400 italic">[ NO_VIOLATIONS_DETECTED ]</div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Trigger */}
+          {!isNeutralized ? (
             <button
               onClick={() => onNeutralize(image.id)}
               disabled={isNeutralizing}
-              className="w-full py-4 font-bold tracking-widest border border-[#09090B] bg-[#09090B] text-[#FAFAFA] hover:bg-[#FAFAFA] hover:text-[#09090B] transition-all duration-100 active:translate-y-[2px]"
+              className={`w-full py-4 text-xs font-bold tracking-[0.2em] transition-all relative group
+                ${isNeutralizing 
+                  ? 'bg-gray-200 text-gray-400 cursor-wait' 
+                  : 'bg-[#F43F5E] text-[#FAFAFA] hover:bg-[#09090B] active:translate-y-[1px]'
+                }`}
             >
-              NEUTRALIZE METADATA
+              {isNeutralizing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="animate-pulse">NEUTRALIZING...</span>
+                </span>
+              ) : (
+                "NEUTRALIZE_THREAT"
+              )}
+              
+              {/* Scanline effect for neutralizing state */}
+              {isNeutralizing && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                  <div className="w-full h-[2px] bg-[#FAFAFA]/20 animate-[scan_2s_linear_infinite]" />
+                </div>
+              )}
             </button>
-          )}
-        </div>
-      )}
-
-      {/* Toggle Detailed Audit */}
-      {signals.length > 0 && (
-        <div className="pt-4 border-t border-[#09090B]">
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="text-[10px] font-bold hover:text-black text-gray-500 flex items-center gap-2 tracking-widest"
-          >
-            {showDetails ? "[-] HIDE DETAILED AUDIT" : "[+] DETAILED AUDIT"}
-          </button>
-          
-          {showDetails && (
-            <div className="mt-4 p-4 border border-[#09090B] bg-[#FAFAFA] overflow-x-auto">
-              <table className="w-full text-left text-[10px] sm:text-xs">
-                <thead>
-                  <tr className="text-gray-500 border-b border-[#09090B]">
-                    <th className="pb-2 font-normal w-1/4 uppercase tracking-tighter">Category</th>
-                    <th className="pb-2 font-normal w-1/4 uppercase tracking-tighter">Signal</th>
-                    <th className="pb-2 font-normal w-1/2 uppercase tracking-tighter">Value</th>
-                  </tr>
-                </thead>
-                <tbody className="align-top">
-                  {signals.map((s) => (
-                    <tr key={s.id} className="border-b border-[#111] last:border-0 hover:bg-[#0a0a0a]">
-                      <td className="py-2 text-gray-400 uppercase tracking-tighter">{s.category}</td>
-                      <td className="py-2 text-[#F43F5E] tracking-tighter">{s.label}</td>
-                      <td className="py-2 text-gray-300 break-all tracking-tighter">{s.value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          ) : (
+            <div className="p-4 border border-[#10B981] bg-[#10B981]/5 text-[#10B981] font-bold text-center uppercase tracking-widest">
+              [+] THREAT_NEUTRALIZED
             </div>
           )}
         </div>
-      )}
+      </div>
+
+      {/* FOOTER_STATUS */}
+      <div className="pt-4 border-t border-[#09090B] flex justify-between text-[8px] font-bold text-gray-400 tracking-[0.3em] uppercase">
+        <div>VAULT_NODE: ALPHA_01</div>
+        <div>KERNEL_STRATUM: SECURE_CORE</div>
+        <div>TIMESTAMP: {new Date().toISOString().replace('T', ' ').slice(0, 19)}</div>
+      </div>
     </div>
   );
 }

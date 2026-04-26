@@ -6,14 +6,19 @@ import ExifReader from 'exifreader';
 
 export interface Signal {
   id: string;
+  tagId?: string; // e.g., "0x0112"
   label: string;
   value: string;
+  hexOffset?: string; // e.g., "0x00AA"
   category: 'location' | 'device' | 'origin' | 'sensitive';
+  isHighRisk?: boolean;
 }
 
-export interface MetadataAudit {
+export interface ForensicReport {
   riskLevel: 'low' | 'medium' | 'high';
+  riskScore: number; // 0-100
   signals: Signal[];
+  violationFlags: string[];
 }
 
 export interface ImageMetadata {
@@ -295,99 +300,61 @@ export function hasImageMetadata(file: File): boolean {
 /**
  * Detects sensitive metadata signals in an image file
  */
-export async function detectMetadata(file: File): Promise<MetadataAudit> {
+export async function detectMetadata(file: File): Promise<ForensicReport> {
   const tags = await ExifReader.load(file);
   const signals: Signal[] = [];
+  const violationFlags: string[] = [];
+
+  // Helper to map risk levels
+  const addSignal = (name: string, label: string, category: Signal['category'], isHighRisk = false) => {
+    const tag = tags[name] as any;
+    if (tag) {
+      signals.push({
+        id: name,
+        tagId: tag.id ? `0x${tag.id.toString(16).padStart(4, '0').toUpperCase()}` : undefined,
+        label,
+        value: tag.description,
+        hexOffset: tag.offset ? `0x${tag.offset.toString(16).padStart(4, '0').toUpperCase()}` : undefined,
+        category,
+        isHighRisk,
+      });
+      if (isHighRisk) {
+        violationFlags.push(`FLAG_${name.toUpperCase()}_EXPOSED`);
+      }
+    }
+  };
 
   // Location signals
-  if (tags['GPSLatitude']) {
-    signals.push({
-      id: 'GPSLatitude',
-      label: 'GPS Latitude',
-      value: tags['GPSLatitude'].description,
-      category: 'location',
-    });
-  }
-  if (tags['GPSLongitude']) {
-    signals.push({
-      id: 'GPSLongitude',
-      label: 'GPS Longitude',
-      value: tags['GPSLongitude'].description,
-      category: 'location',
-    });
-  }
+  addSignal('GPSLatitude', 'GPS Latitude', 'location', true);
+  addSignal('GPSLongitude', 'GPS Longitude', 'location', true);
+  if (tags['GPSLatitude']) violationFlags.push('FLAG_GPS_PRECISION_ERR');
 
   // Device signals
-  if (tags['Make']) {
-    signals.push({
-      id: 'Make',
-      label: 'Make',
-      value: tags['Make'].description,
-      category: 'device',
-    });
-  }
-  if (tags['Model']) {
-    signals.push({
-      id: 'Model',
-      label: 'Model',
-      value: tags['Model'].description,
-      category: 'device',
-    });
-  }
+  addSignal('Make', 'Manufacturer', 'device');
+  addSignal('Model', 'Device Model', 'device');
+  addSignal('SerialNumber', 'Serial Number', 'device', true);
 
   // Origin signals
-  if (tags['Software']) {
-    signals.push({
-      id: 'Software',
-      label: 'Software',
-      value: tags['Software'].description,
-      category: 'origin',
-    });
-  }
-  if (tags['DateTimeOriginal']) {
-    signals.push({
-      id: 'DateTimeOriginal',
-      label: 'Date Time Original',
-      value: tags['DateTimeOriginal'].description,
-      category: 'origin',
-    });
-  }
-
+  addSignal('Software', 'Processing Software', 'origin');
+  addSignal('DateTimeOriginal', 'Timestamp (Original)', 'origin', true);
+  
   // Sensitive signals
-  if (tags['OwnerName']) {
-    signals.push({
-      id: 'OwnerName',
-      label: 'Owner Name',
-      value: tags['OwnerName'].description,
-      category: 'sensitive',
-    });
-  }
-  if (tags['Artist']) {
-    signals.push({
-      id: 'Artist',
-      label: 'Artist',
-      value: tags['Artist'].description,
-      category: 'sensitive',
-    });
-  }
-  if (tags['Copyright']) {
-    signals.push({
-      id: 'Copyright',
-      label: 'Copyright',
-      value: tags['Copyright'].description,
-      category: 'sensitive',
-    });
-  }
+  addSignal('OwnerName', 'Owner Identity', 'sensitive', true);
+  addSignal('Artist', 'Creator/Artist', 'sensitive', true);
+  addSignal('Copyright', 'Copyright Notice', 'sensitive');
 
+  // Calculate risk score
+  const highRiskCount = signals.filter(s => s.isHighRisk).length;
+  const riskScore = Math.min(100, (signals.length * 5) + (highRiskCount * 20));
+  
   let riskLevel: 'low' | 'medium' | 'high' = 'low';
-  if (signals.length > 2) {
-    riskLevel = 'high';
-  } else if (signals.length >= 1) {
-    riskLevel = 'medium';
-  }
+  if (riskScore > 70) riskLevel = 'high';
+  else if (riskScore > 30) riskLevel = 'medium';
 
   return {
     riskLevel,
+    riskScore,
     signals,
+    violationFlags: Array.from(new Set(violationFlags)),
   };
 }

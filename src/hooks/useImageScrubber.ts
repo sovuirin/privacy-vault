@@ -6,7 +6,7 @@ import {
   isValidImageFormat,
   ImageMetadata,
   detectMetadata,
-  MetadataAudit,
+  ForensicReport,
 } from "@/lib/metadata";
 
 export interface ScrubbedImageResult {
@@ -14,7 +14,7 @@ export interface ScrubbedImageResult {
   originalFile: File;
   cleanedCanvas: HTMLCanvasElement | null;
   metadata: ImageMetadata | null;
-  audit: MetadataAudit | null;
+  audit: ForensicReport | null;
   isNeutralized: boolean;
   status: 'analyzing' | 'detected' | 'neutralizing' | 'neutralized' | 'error';
 }

@@ -7,7 +7,7 @@ import {
   ExportFormat,
   ExportOptions,
 } from "@/lib/metadata";
-import { ScrubbedImageResult } from "@/hooks/useImageScrubber";
+import type { ScrubbedImageResult } from "@/hooks/useImageScrubber";
 
 interface ImageDownloadProps {
   images: ScrubbedImageResult[];
