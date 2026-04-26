@@ -61,3 +61,4 @@ Thumbs.db
 /.stitch/designs/
 /.stitch/temp/
 # Do NOT ignore .stitch/DESIGN.md or docs/
+test-results/
